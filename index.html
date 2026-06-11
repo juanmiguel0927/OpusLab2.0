@@ -72,7 +72,8 @@
         .blueprint-slot{border:2px dashed #cbd5e1;min-height:65px;display:flex;align-items:center;justify-content:center;border-radius:0.5rem;cursor:pointer;transition:all 0.2s;} 
         .dark .blueprint-slot{border-color:#475569;} .blueprint-slot:hover{background-color:rgba(168,85,247,0.1);border-color:#a855f7;} .blueprint-slot.filled{border-style:solid;}
         .inv-64{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.65em;line-height:0.9;vertical-align:middle;margin-left:2px;}
-        .abcjs-note.playing-svg path{fill:#4f46e5 !important;} .dark .abcjs-note.playing-svg path{fill:#818cf8 !important;}
+        .abcjs-note.playing-svg path, .playing-svg path { fill: #4f46e5 !important; stroke: #4f46e5 !important; transition: all 0.05s; } 
+        .dark .abcjs-note.playing-svg path, .dark .playing-svg path { fill: #818cf8 !important; stroke: #818cf8 !important; transition: all 0.05s; }
         
         /* Dark Mode Global */
         html.dark{color-scheme:dark;} .dark body{background-color:#020617;color:#f8fafc;} 
@@ -413,7 +414,7 @@
             if (c) c.classList.add('active'); if (b) b.classList.add('active-tab');
             window.currentView = tId;
             if(tId === 'metrica' && window.MetricaApp) window.MetricaApp.update();
-            if(tId === 'escalas' && window.EscalasApp && window.EscalasApp.scale) window.EscalasApp.renderVexFlow();
+            if(tId === 'escalas' && window.EscalasApp && window.EscalasApp.sc) window.EscalasApp.renderVexFlow();
             if(tId === 'armonicos' && window.ArmonicosApp && !window.ArmonicosApp.initialized) { window.ArmonicosApp.init(); window.ArmonicosApp.initialized = true; }
             if(tId === 'funciones' && window.FuncionesApp && !window.FuncionesApp.initialized) { window.FuncionesApp.init(); window.FuncionesApp.initialized = true; }
         };
@@ -422,7 +423,7 @@
         window.closeModal = function(id) { const el = dGe(id); if(el) { el.classList.add('hidden'); el.classList.remove('flex'); } };
         window.toggleTheme = function() {
             const doc = document.documentElement; doc.classList.toggle('dark'); localStorage.theme = doc.classList.contains('dark') ? 'dark' : 'light';
-            if (window.currentView === 'escalas' && window.EscalasApp.scale) setTimeout(() => window.EscalasApp.renderVexFlow(), 50);
+            if (window.currentView === 'escalas' && window.EscalasApp.sc) setTimeout(() => window.EscalasApp.renderVexFlow(), 50);
             if (window.currentView === 'metrica') setTimeout(() => window.MetricaApp.update(), 50);
             if (window.currentView === 'armonicos') setTimeout(() => { window.ArmonicosApp.renderNaturalData(); window.ArmonicosApp.renderArtificialData(); }, 50);
             if (window.currentView === 'funciones') setTimeout(() => window.FuncionesApp.updateMap(), 50);
@@ -543,59 +544,59 @@
 
         // ESCALAS
         window.EscalasApp = {
-            scale: null, root: '', notasAudio: [], intCol: [], bagM: [], bagR: [],
+            sc: null, r: '', nA: [], iC: [], bM: [], bR: [],
             generarModo: function() {
                 const fE = dGe('filtro-familia'); if(!fE) return;
                 const fam = fE.value; const p = fam!=='Todas'?dbModos.filter(m=>m.f===fam):dbModos; if(!p.length){alert("Base vacía.");return;}
-                if(this.bagM.length===0||this.bagM.some(m=>m.f!==fam&&fam!=="Todas")){this.bagM=[...p];for(let i=this.bagM.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[this.bagM[i],this.bagM[j]]=[this.bagM[j],this.bagM[i]];}}
-                this.scale=this.bagM.pop(); if(this.bagR.length===0){this.bagR=[...raicesDisp];for(let i=this.bagR.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[this.bagR[i],this.bagR[j]]=[this.bagR[j],this.bagR[i]];}} this.root=this.bagR.pop();
-                const mAT = dGe('modo-actual-titulo'); if(mAT) mAT.innerText=`Tónica en ${this.root} (Grado ${this.scale.g})`; 
-                const mAP = dGe('modo-actual-padre'); if(mAP) mAP.innerText=`Familia Padre: ${this.scale.f}`;
+                if(this.bM.length===0||this.bM.some(m=>m.f!==fam&&fam!=="Todas")){this.bM=[...p];for(let i=this.bM.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[this.bM[i],this.bM[j]]=[this.bM[j],this.bM[i]];}}
+                this.sc=this.bM.pop(); if(this.bR.length===0){this.bR=[...raicesDisp];for(let i=this.bR.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[this.bR[i],this.bR[j]]=[this.bR[j],this.bR[i]];}} this.r=this.bR.pop();
+                const mAT = dGe('modo-actual-titulo'); if(mAT) mAT.innerText=`Tónica en ${this.r} (Grado ${this.sc.g})`; 
+                const mAP = dGe('modo-actual-padre'); if(mAP) mAP.innerText=`Familia Padre: ${this.sc.f}`;
                 const pS = dGe('partitura-section'); if(pS) { pS.classList.remove('hidden'); pS.classList.add('flex'); }
                 const eF = dGe('evaluacion-form'); if(eF) eF.classList.remove('hidden');
                 for(let i=2;i<=7;i++){const e=dGe(`int-${i}`);if(e){e.value="";e.classList.remove('select-error','select-success');}}
-                this.setBadge(1,'default'); this.lockFrom(2); this.intCol=[]; 
+                this.sB(1,'default'); this.lF(2); this.iC=[]; 
                 const ie3 = dGe('info-enarmonia-3ra'); if(ie3) ie3.classList.add('hidden');
                 const p5 = dGe('pregunta-paso-5'); if(p5) p5.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";
-                this.renderVexFlow();
+                this.renderVexFlow(); this.buildStep1();
             },
             renderVexFlow: function() {
                 if(!window.Vex) return; const VF = Vex.Flow; const c = dGe('staff-container'); if(!c) return; c.innerHTML = "";
                 const ren = new VF.Renderer(c, VF.Renderer.Backends.SVG); ren.resize(500, 140); const ctx = ren.getContext(); const svg = c.querySelector('svg'); 
                 if(svg){svg.setAttribute('viewBox', '0 0 500 140'); svg.style.width='100%';}
                 const st = new VF.Stave(10, 10, 480); st.addClef("treble").setContext(ctx).draw();
-                let n = [], oct = 4, pI = -1, iR = letrasBase.indexOf(this.root.charAt(0)); const rL = this.root.charAt(0); const rA = this.root.slice(1);
+                let n = [], oct = 4, pI = -1, iR = letrasBase.indexOf(this.r.charAt(0)); const rL = this.r.charAt(0); const rA = this.r.slice(1);
                 let aV = 0; if(rA==='b')aV=-1;else if(rA==='#')aV=1; const rV = valLetras[rL] + aV; const isD = document.documentElement.classList.contains('dark'); const dC = isD?"#cbd5e1":"#1e293b";
-                this.scale.i.forEach(iS => {
+                this.sc.i.forEach(iS => {
                     let nm = parseInt(iS.replace(/[^0-9]/g, '')), sm = semitonosMap[iS]; let iO = (iR+nm-1)%7, lO = letrasBase[iO], vB = valLetras[lO];
                     if(pI!==-1&&iO<pI)oct++; pI=iO; let d = ((rV+sm)%12)-vB; if(d>6)d-=12; if(d<-6)d+=12;
                     let alt = d===1?'#':(d===2?'##':(d===-1?'b':(d===-2?'bb':''))); n.push({vk: `${lO.toLowerCase()}/${oct}`, acc: alt, lbl: lO+alt, it: iS});
                 });
-                this.notasAudio = n;
+                this.nA = n;
                 const vfn = n.map(nd => {
                     const note = new VF.StaveNote({ keys: [nd.vk], duration: "q" }); if (nd.acc) note.addModifier(new VF.Accidental(nd.acc));
-                    if (this.intCol.includes(nd.it)) note.setStyle({fillStyle: "#3b82f6", strokeStyle: "#3b82f6"}); else note.setStyle({fillStyle: dC, strokeStyle: dC});
+                    if (this.iC.includes(nd.it)) note.setStyle({fillStyle: "#3b82f6", strokeStyle: "#3b82f6"}); else note.setStyle({fillStyle: dC, strokeStyle: dC});
                     return note;
                 });
                 const voice = new VF.Voice({ num_beats: 7, beat_value: 4 }); voice.addTickables(vfn); new VF.Formatter().joinVoices([voice]).format([voice], 400); voice.draw(ctx, st);
-                this.actualizarLabelsNotacion(); const iD = dGe("intervalos-seleccionados"); 
-                if (iD) iD.innerHTML = this.notasAudio.map((nd, idx) => `<div id="badge-container-${idx+1}" class="flex-1 opacity-0 scale-90 transition-all flex flex-col items-center"><span id="score-int-${idx+1}" class="opus-badge bg-blue-50 text-blue-600 mt-2">${idx===0?'1':''}</span></div>`).join('');
-                this.sincronizarIntervaloScore(1);
+                this.tN(); const iD = dGe("intervalos-seleccionados"); 
+                if (iD) iD.innerHTML = this.nA.map((nd, idx) => `<div id="badge-container-${idx+1}" class="flex-1 opacity-0 scale-90 transition-all flex flex-col items-center"><span id="score-int-${idx+1}" class="opus-badge bg-blue-50 text-blue-600 mt-2">${idx===0?'1':''}</span></div>`).join('');
+                this.sIS(1);
             },
-            sincronizarIntervaloScore: function(gr) {
+            sIS: function(gr) {
                 const ie = dGe(`int-${gr}`); const v = ie ? ie.value : (gr===1?'1':null);
                 const s = dGe(`score-int-${gr}`); const bc = dGe(`badge-container-${gr}`);
                 if(s&&bc){s.innerText=v;if(v){bc.className="flex flex-col items-center flex-1 opacity-100 scale-100 transition-all";s.className="opus-badge bg-blue-50 text-blue-600 shadow-sm border border-blue-100 mt-2";}else{bc.className="flex flex-col items-center flex-1 opacity-0 scale-90 transition-all";}}
             },
-            setBadge: function(st, stt) {
+            sB: function(st, stt) {
                 const b = dGe(`badge-${st}`); const c = dGe(st===1?`paso-1-container`:`paso-${st}`); if(!b||!c)return;
                 if(stt==='correct'){b.className="bg-[#dcfce7] text-[#166534] w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800";b.innerHTML=`<i data-lucide="check" class="w-5 h-5"></i>`;if(window.lucide)lucide.createIcons();c.classList.add('correct-step');c.classList.remove('incorrect-step');}else if(stt==='error'){b.className="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800";b.innerHTML="✗";c.classList.add('incorrect-step');c.classList.remove('correct-step');}else{b.className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm dark:bg-blue-900/50 dark:text-blue-400";b.innerHTML=st;c.classList.remove('correct-step','incorrect-step');}
             },
-            lockFrom: function(st) {
+            lF: function(st) {
                 for(let i=st;i<=5;i++){
                     const e=dGe(`paso-${i}`);
                     if(e){
-                        e.classList.add('locked-step');this.setBadge(i,'default');
+                        e.classList.add('locked-step');this.sB(i,'default');
                         if(i===2)document.querySelectorAll('input[name="tipoEscala"]').forEach(r=>r.checked=false);
                         if(i===3){const mb=dGe('modo-base');if(mb){mb.value="";mb.classList.remove('select-error');}dGe('formula-container')?.classList.add('hidden');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";}
                         if(i===4){const av=dGe('acorde-verificacion');if(av){av.value="";av.classList.remove('select-error');}}
@@ -605,65 +606,66 @@
             },
             resetForm: function() {
                 for(let i=2;i<=7;i++){const e=dGe(`int-${i}`);if(e){e.value="";e.classList.remove('select-error','select-success');}}
-                this.setBadge(1,'default');this.lockFrom(2);this.intCol=[];const ie3=dGe('info-enarmonia-3ra');if(ie3)ie3.classList.add('hidden');
+                this.sB(1,'default');this.lF(2);this.iC=[];const ie3=dGe('info-enarmonia-3ra');if(ie3)ie3.classList.add('hidden');
             },
             buildStep1: function() {
                 const c=dGe('intervalos-container');if(!c)return;
-                c.innerHTML=`<div class="opus-input w-full p-3 text-blue-600 font-extrabold text-center opacity-70 bg-slate-100 border-dashed border-slate-300">1<input type="hidden" id="int-1" value="1"></div>`;
-                for(let i=2;i<=7;i++)c.innerHTML+=`<select id="int-${i}" onchange="window.EscalasApp.validarPaso1(${i})" class="escala-select opus-input w-full py-3 px-1 sm:px-2 font-semibold cursor-pointer text-center sm:text-left text-xs sm:text-sm transition-colors"><option value="">${romanos[i]}</option>${optGrd[i].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+                let html=`<div class="opus-input w-full p-3 text-blue-600 font-extrabold text-center opacity-70 bg-slate-100 border-dashed border-slate-300">1<input type="hidden" id="int-1" value="1"></div>`;
+                for(let i=2;i<=7;i++)html+=`<select id="int-${i}" onchange="window.EscalasApp.validarPaso1(${i})" class="escala-select opus-input w-full py-3 px-1 sm:px-2 font-semibold cursor-pointer text-center sm:text-left text-xs sm:text-sm transition-colors"><option value="">${romanos[i]}</option>${optGrd[i].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+                c.innerHTML = html;
             },
             validarPaso1: function(gr) {
-                if(!this.scale)return;this.sincronizarIntervaloScore(gr);let tod=true,tb=true;
+                if(!this.sc)return;this.sIS(gr);let tod=true,tb=true;
                 for(let i=2;i<=7;i++){
                     let e=dGe(`int-${i}`);
                     if(e){
                         e.classList.remove('select-error','select-success');
                         if(!e.value) tod=false;
-                        else if(e.value!==this.scale.i[i-1]){ e.classList.add('select-error'); tb=false; }
+                        else if(e.value!==this.sc.i[i-1]){ e.classList.add('select-error'); tb=false; }
                         else { e.classList.add('select-success'); }
                     }
                 }
-                if(tod){if(tb){this.setBadge(1,'correct');const p2=dGe('paso-2');if(p2)p2.classList.remove('locked-step');}else{this.setBadge(1,'error');this.lockFrom(2);}}else{this.setBadge(1,'default');this.lockFrom(2);}
+                if(tod){if(tb){this.sB(1,'correct');const p2=dGe('paso-2');if(p2)p2.classList.remove('locked-step');}else{this.sB(1,'error');this.lF(2);}}else{this.sB(1,'default');this.lF(2);}
             },
             validarPaso2: function() {
                 const s=document.querySelector('input[name="tipoEscala"]:checked');if(!s)return;const ie=dGe('info-enarmonia-3ra');
-                if(s.value===this.scale.t){
-                    this.setBadge(2,'correct');const sb=dGe('modo-base');
+                if(s.value===this.sc.t){
+                    this.sB(2,'correct');const sb=dGe('modo-base');
                     if(sb){sb.innerHTML='<option value="">Selecciona base...</option>';let op=s.value==='Mayor'?['Jónico','Lidio','Mixolidio']:['Dórico','Frigio','Eólico','Locrio'];op.forEach(o=>sb.appendChild(new Option(o,o)));}
-                    if(ie){const hb4=this.scale.i.includes('b4');if(s.value==='Mayor'&&hb4){ie.innerHTML=`Nota común teórica: El intervalo <span class="font-black">b4</span> actuará enarmónicamente como <span class="font-black">3</span>.`;ie.classList.remove('hidden');}else if(s.value==='Mayor'&&this.scale.i.includes('3')){ie.innerHTML=`Nota común teórica: La <span class="font-black">3</span> se mantendrá intacta.`;ie.classList.remove('hidden');}else{ie.classList.add('hidden');}}
+                    if(ie){const hb4=this.sc.i.includes('b4');if(s.value==='Mayor'&&hb4){ie.innerHTML=`Nota común teórica: El intervalo <span class="font-black">b4</span> actuará enarmónicamente como <span class="font-black">3</span>.`;ie.classList.remove('hidden');}else if(s.value==='Mayor'&&this.sc.i.includes('3')){ie.innerHTML=`Nota común teórica: La <span class="font-black">3</span> se mantendrá intacta.`;ie.classList.remove('hidden');}else{ie.classList.add('hidden');}}
                     const p3=dGe('paso-3');if(p3)p3.classList.remove('locked-step');
-                }else{this.setBadge(2,'error');if(ie)ie.classList.add('hidden');this.lockFrom(3);}
+                }else{this.sB(2,'error');if(ie)ie.classList.add('hidden');this.lF(3);}
             },
             validarPaso3: function() {
                 const sb=dGe('modo-base');const fc=dGe('formula-container');if(!sb||!fc)return;sb.classList.remove('select-error');
-                if(!sb.value){fc.classList.add('hidden');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lockFrom(4);return;}
-                const d=formModBase[sb.value];fc.classList.remove('hidden');const hb4e=this.scale.i.includes('b4')&&d.f.includes('3');
-                const hFA=this.scale.i.map((int,i)=>{const ea=int!==d.f[i];let cl=ea?'text-pink-600 font-extrabold bg-pink-100 dark:bg-pink-900/30 dark:text-pink-400 rounded px-1':'text-slate-700 dark:text-slate-300 font-extrabold';if(hb4e&&int==='b4')cl+=' enharmonic-link';return `<div class="${cl} text-center">${int}</div>`;}).join('');
+                if(!sb.value){fc.classList.add('hidden');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lF(4);return;}
+                const d=formModBase[sb.value];fc.classList.remove('hidden');const hb4e=this.sc.i.includes('b4')&&d.f.includes('3');
+                const hFA=this.sc.i.map((int,i)=>{const ea=int!==d.f[i];let cl=ea?'text-pink-600 font-extrabold bg-pink-100 dark:bg-pink-900/30 dark:text-pink-400 rounded px-1':'text-slate-700 dark:text-slate-300 font-extrabold';if(hb4e&&int==='b4')cl+=' enharmonic-link';return `<div class="${cl} text-center">${int}</div>`;}).join('');
                 const hFB=d.f.map(int=>{const ec=d.c.includes(int);let cl=ec?'highlight-char':'text-slate-400 dark:text-slate-500';if(hb4e&&int==='3')cl+=' enharmonic-link';return `<div class="${cl} text-center font-bold">${int}</div>`;}).join('');
                 let ne='';if(hb4e)ne=`<div class="w-full text-center text-[11px] sm:text-xs text-purple-700 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/50 rounded p-2 mt-2 leading-tight">Nota: El <span class="font-black">b4</span> funciona como <span class="font-black">3</span>.</div>`;
                 fc.innerHTML=`<div class="flex flex-col w-full max-w-lg mx-auto"><div class="grid grid-cols-[minmax(60px,auto)_1fr] gap-1 sm:gap-2 items-center w-full"><span class="text-slate-400 font-semibold uppercase text-[10px] sm:text-xs text-left leading-tight pr-2">${sb.value}</span><div class="grid grid-cols-7 gap-1 sm:gap-2 items-center w-full">${hFB}</div></div><div class="border-b border-slate-200 dark:border-slate-700 my-2 w-full"></div><div class="grid grid-cols-[minmax(60px,auto)_1fr] gap-1 sm:gap-2 items-center w-full"><span class="text-slate-500 dark:text-slate-400 font-semibold uppercase text-[10px] sm:text-xs text-left leading-tight pr-2">Actual</span><div class="grid grid-cols-7 gap-1 sm:gap-2 items-center w-full">${hFA}</div></div>${ne}</div>`;
-                if(this.scale.b.includes(sb.value)){this.setBadge(3,'correct');const p=dGe('pregunta-paso-5');if(p)p.innerHTML=`¿Qué diferencias tiene la escala actual con el modo diatónico base <strong>${sb.value}</strong> para definir su nombre?`;const p4=dGe('paso-4');if(p4)p4.classList.remove('locked-step');}else{this.setBadge(3,'error');sb.classList.add('select-error');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lockFrom(4);}
+                if(this.sc.b.includes(sb.value)){this.sB(3,'correct');const p=dGe('pregunta-paso-5');if(p)p.innerHTML=`¿Qué diferencias tiene la escala actual con el modo diatónico base <strong>${sb.value}</strong> para definir su nombre?`;const p4=dGe('paso-4');if(p4)p4.classList.remove('locked-step');}else{this.sB(3,'error');sb.classList.add('select-error');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lF(4);}
             },
             validarPaso4: function() {
                 const av=dGe('acorde-verificacion');if(!av)return;av.classList.remove('select-error');
-                if(!av.value){this.intCol=[];this.renderVexFlow();this.lockFrom(5);return;}
+                if(!av.value){this.iC=[];this.renderVexFlow();this.lF(5);return;}
                 const sb=dGe('modo-base');if(!sb)return;const mb=sb.value;const aL=av.value.split(' (')[0];const aBR=mapAcordBase[mb];
                 let eV=false;if(aL===aBR)eV=true;
-                if(aL==='Xmaj7'&&!this.scale.i.includes('7'))eV=false;
-                if(aL==='X7sus(b9)'&&(!this.scale.i.includes('4')||!this.scale.i.includes('b2')))eV=false;
-                if(aL==='Xm7'&&this.scale.i.includes('b5'))eV=false;
-                if(aL==='Xm7(b5)'&&aBR==='Xm7'&&this.scale.i.includes('b5'))eV=true;
+                if(aL==='Xmaj7'&&!this.sc.i.includes('7'))eV=false;
+                if(aL==='X7sus(b9)'&&(!this.sc.i.includes('4')||!this.sc.i.includes('b2')))eV=false;
+                if(aL==='Xm7'&&this.sc.i.includes('b5'))eV=false;
+                if(aL==='Xm7(b5)'&&aBR==='Xm7'&&this.sc.i.includes('b5'))eV=true;
                 if(eV){
-                    this.setBadge(4,'correct');this.intCol=intAcordes[aL]||[];this.renderVexFlow();const sn=dGe('nombre-final');
+                    this.sB(4,'correct');this.iC=intAcordes[aL]||[];this.renderVexFlow();const sn=dGe('nombre-final');
                     if(sn){
                         sn.innerHTML='<option value="">Selecciona la escala correcta...</option>';const oN=new Set();
                         dbModos.filter(m=>m.b.includes(mb)).forEach(m=>{let n=m.n.find(nx=>nx.includes(mb));if(n)oN.add(n);else oN.add(m.n[0]);});
                         [...oN].sort().forEach(op=>sn.appendChild(new Option(op,op)));
                     }
                     const p5=dGe('paso-5');if(p5)p5.classList.remove('locked-step');
-                }else{this.setBadge(4,'error');av.classList.add('select-error');this.intCol=intAcordes[aL]||[];this.renderVexFlow();this.lockFrom(5);}
+                }else{this.sB(4,'error');av.classList.add('select-error');this.iC=intAcordes[aL]||[];this.renderVexFlow();this.lF(5);}
             },
-            unificarNombres: function(nA) { 
+            uN: function(nA) { 
                 let r=new Set();
                 nA.forEach(nx=>{
                     r.add(nx);
@@ -675,34 +677,34 @@
             },
             validarPaso5: function() {
                 const nf=dGe('nombre-final');if(!nf)return;nf.classList.remove('select-error');if(!nf.value){const rp=dGe('resultados-panel');if(rp)rp.classList.add('hidden');return;}
-                const sb=dGe('modo-base');if(!sb)return;const mb=sb.value;let nE=this.scale.n.find(n=>n.includes(mb));if(!nE)nE=this.scale.n[0];
-                if(this.scale.n.includes(nf.value)){
-                    this.setBadge(5,'correct');const sS=(id,t)=>{const e=dGe(id);if(e)e.innerText=t;};
-                    sS('resumen-intervalos',this.scale.i.join(' - '));sS('resumen-3ra',this.scale.t);sS('resumen-base',mb);const av=dGe('acorde-verificacion');if(av)sS('resumen-acorde',av.value.split(' (')[0]);
-                    let pfN = this.scale.n[0]; sS('resumen-nombre',pfN);sS('resumen-origen',`${this.scale.g}º modo de la escala ${this.scale.f.toLowerCase()}`);
+                const sb=dGe('modo-base');if(!sb)return;const mb=sb.value;let nE=this.sc.n.find(n=>n.includes(mb));if(!nE)nE=this.sc.n[0];
+                if(this.sc.n.includes(nf.value)){
+                    this.sB(5,'correct');const sS=(id,t)=>{const e=dGe(id);if(e)e.innerText=t;};
+                    sS('resumen-intervalos',this.sc.i.join(' - '));sS('resumen-3ra',this.sc.t);sS('resumen-base',mb);const av=dGe('acorde-verificacion');if(av)sS('resumen-acorde',av.value.split(' (')[0]);
+                    let pfN = this.sc.n[0]; sS('resumen-nombre',pfN);sS('resumen-origen',`${this.sc.g}º modo de la escala ${this.sc.f.toLowerCase()}`);
                     let bA=av?av.value.split(' (')[0]:'';let rA=bA;
-                    if(this.scale.i.includes('bb7')&&bA==='Xm7(b5)')rA='Xº7';else if(this.scale.n[0].includes('Alterado'))rA='X7alt';else if(this.scale.i.includes('#5')&&bA==='Xmaj7')rA='Xmaj7(#5)';else if(this.scale.i.includes('7')&&bA.includes('m7'))rA=bA.replace('m7','m(maj7)');
-                    sS('resumen-acorde-real',rA);const bF=formModBase[mb].f;let a=[];this.scale.i.forEach((int,i)=>{if(int!==bF[i]){if(['2','3','6','7'].includes(int)&&bF[i].includes('b'))a.push('♮'+int);else a.push(int);}});sS('resumen-alteracion',a.length>0?a.join(', '):'Ninguna');
+                    if(this.sc.i.includes('bb7')&&bA==='Xm7(b5)')rA='Xº7';else if(this.sc.n[0].includes('Alterado'))rA='X7alt';else if(this.sc.i.includes('#5')&&bA==='Xmaj7')rA='Xmaj7(#5)';else if(this.sc.i.includes('7')&&bA.includes('m7'))rA=bA.replace('m7','m(maj7)');
+                    sS('resumen-acorde-real',rA);const bF=formModBase[mb].f;let a=[];this.sc.i.forEach((int,i)=>{if(int!==bF[i]){if(['2','3','6','7'].includes(int)&&bF[i].includes('b'))a.push('♮'+int);else a.push(int);}});sS('resumen-alteracion',a.length>0?a.join(', '):'Ninguna');
                     
-                    let aP=this.scale.n.slice(1); let aG=this.unificarNombres(this.scale.n).filter(x=>x!==pfN&&!aP.includes(x)); let tA=[...new Set([...aP,...aG])];
+                    let aP=this.sc.n.slice(1); let aG=this.uN(this.sc.n).filter(x=>x!==pfN&&!aP.includes(x)); let tA=[...new Set([...aP,...aG])];
                     const ae=dGe('nombres-alternos');const aec=dGe('nombres-alternos-container');
                     if(ae&&aec){if(tA.length>0){ae.innerHTML=`Nombres alternativos y de tensión armónica:<br><span class="font-normal text-blue-100">${tA.join(' / ')}</span>`;aec.classList.remove('hidden');}else aec.classList.add('hidden');}
                     const rp=dGe('resultados-panel');if(rp){rp.classList.remove('hidden');rp.scrollIntoView({behavior:'smooth'});}
-                }else{this.setBadge(5,'error');nf.classList.add('select-error');}
+                }else{this.sB(5,'error');nf.classList.add('select-error');}
             },
-            obtenerLabelNotacion: function(lA, t) { if(t==='americano')return lA;const nt=lA.charAt(0);const al=lA.substring(1);return mapaLatino[nt]+al; },
-            actualizarLabelsNotacion: function() {
-                const toggle=dGe("toggle-notas");const vis=toggle?toggle.checked:false;const tn=dGe("tipo-notacion");const t=tn?tn.value:'americano';
+            oL: function(lA, t) { if(t==='americano')return lA;const nt=lA.charAt(0);const al=lA.substring(1);return mapaLatino[nt]+al; },
+            tN: function() {
+                const tg=dGe("toggle-notas");const vis=tg?tg.checked:false;const tn=dGe("tipo-notacion");const t=tn?tn.value:'americano';
                 const c=dGe("notas-nombres");const sc=dGe("notacion-selector-container");
-                if(sc)sc.style.display=vis?"block":"none";if(c)c.style.opacity=vis?"1":"0";if(!this.notasAudio.length||!c)return;
-                c.innerHTML=this.notasAudio.map(nd=>{const lf=this.obtenerLabelNotacion(nd.lbl,t);return `<div class="flex-1 text-center text-xs sm:text-sm font-extrabold ${this.intCol.includes(nd.it)?'text-blue-500':'text-slate-700 dark:text-slate-300'}">${lf}</div>`;}).join('');
+                if(sc)sc.style.display=vis?"block":"none";if(c)c.style.opacity=vis?"1":"0";if(!this.nA.length||!c)return;
+                c.innerHTML=this.nA.map(nd=>{const lf=this.oL(nd.lbl,t);return `<div class="flex-1 text-center text-xs sm:text-sm font-extrabold ${this.iC.includes(nd.it)?'text-blue-500':'text-slate-700 dark:text-slate-300'}">${lf}</div>`;}).join('');
             },
-            toggleNotas: function() { this.actualizarLabelsNotacion(); },
-            obtenerFrecuencia: function(k, a) { const p=k.split('/');const r=valLetras[p[0].toUpperCase()]+(a==='b'?-1:(a==='bb'?-2:(a==='#'?1:(a==='##'?2:0))));return 440*Math.pow(2,((12*(parseInt(p[1])+1)+r)-69)/12); },
+            toggleNotas: function() { this.tN(); },
+            oF: function(k, a) { const p=k.split('/');const r=valLetras[p[0].toUpperCase()]+(a==='b'?-1:(a==='bb'?-2:(a==='#'?1:(a==='##'?2:0))));return 440*Math.pow(2,((12*(parseInt(p[1])+1)+r)-69)/12); },
             reproducirEscala: function() {
-                if(!this.notasAudio.length)return;const ctx=window.audioCtx||new(window.AudioContext||window.webkitAudioContext)();if(!window.audioCtx)window.audioCtx=ctx;if(ctx.state==='suspended')ctx.resume();
+                if(!this.nA.length)return;const ctx=window.audioCtx||new(window.AudioContext||window.webkitAudioContext)();if(!window.audioCtx)window.audioCtx=ctx;if(ctx.state==='suspended')ctx.resume();
                 let t=ctx.currentTime+0.1;const ld=dGe("notas-nombres");const lbs=ld?ld.children:[];const sgs=document.querySelectorAll('#partitura-section .vf-stavenote');
-                this.notasAudio.forEach((n,idx)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(this.obtenerFrecuencia(n.vk,n.acc),t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+0.5);const dMs=(t-ctx.currentTime)*1000;setTimeout(()=>{if(lbs[idx])lbs[idx].classList.add('playing-label');if(sgs[idx])sgs[idx].classList.add('playing-note');},dMs);setTimeout(()=>{if(lbs[idx])lbs[idx].classList.remove('playing-label');if(sgs[idx])sgs[idx].classList.remove('playing-note');},dMs+300);t+=0.35;});
+                this.nA.forEach((n,idx)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(this.oF(n.vk,n.acc),t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+0.5);const dMs=(t-ctx.currentTime)*1000;setTimeout(()=>{if(lbs[idx])lbs[idx].classList.add('playing-label');if(sgs[idx])sgs[idx].classList.add('playing-note');},dMs);setTimeout(()=>{if(lbs[idx])lbs[idx].classList.remove('playing-label');if(sgs[idx])sgs[idx].classList.remove('playing-note');},dMs+300);t+=0.35;});
             }
         };
 
@@ -959,7 +961,7 @@
                         let classStr = `!class="chord-${i}"!`;
 
                         let wParts = a.weber.split('/'); let wB = wParts[0].replace(/7/g, '').replace('°7', '°'); let wS = wParts.length > 1 ? '/' + wParts[1].replace(/7/g, '') : '';
-                        let iTAbc="";if(a.pcs.length===4){if(a.inversion===0)iTAbc="7";else if(a.inversion===1)iTAbc="\\n6\\n5";else if(a.inversion===2)iTAbc="\\n4\\n3";else if(a.inversion===3)iTAbc="2";}else{if(a.inversion===1)iTAbc="6";else if(a.inversion===2)iTAbc="\\n6\\n4";}
+                        let iTAbc="";if(a.pcs.length===4){if(a.inversion===0)iTAbc="⁷";else if(a.inversion===1)iTAbc="⁶₅";else if(a.inversion===2)iTAbc="⁴₃";else if(a.inversion===3)iTAbc="²";}else{if(a.inversion===1)iTAbc="⁶";else if(a.inversion===2)iTAbc="⁶₄";}
                         let amI="";if(a.inversion>0){amI=`/${this.spellNoteText(a.midiVoices[0], a.raiz, a.pcs)}`;}
                         let cA=sA?`\"^${a.cifrado}${amI}\"`:"";let cW=sW?`\"_${wB}${iTAbc}${wS}\"`:"";
                         ts+=`${cA}${classStr}[${sN}${aN}] `;bs+=`${cW}${classStr}[${tN}${bN}] `;
