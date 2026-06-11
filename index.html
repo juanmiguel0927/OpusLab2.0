@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpusLab 2.0</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; touch-action: manipulation; transition: background-color 0.3s, color 0.3s; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .tabs-container { position: sticky; top: 0; z-index: 50; background: white; border-bottom: 1px solid #e2e8f0; transition: background-color 0.3s, border-color 0.3s; }
+        .tabs-wrapper { display: flex; justify-content: center; overflow-x: auto; white-space: nowrap; scrollbar-width: none; padding: 0 1rem; }
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
+        
+        .nav-btn { padding: 0.8rem 1rem; font-size: 0.75rem; font-weight: 800; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; min-width: 120px; flex-shrink: 0; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+        @media (min-width: 768px) { .nav-btn { font-size: 0.85rem; flex-direction: row; gap: 0.6rem; min-width: auto; padding: 1.2rem 2rem; } }
+        
+        /* Colores de Pestañas Activas */
+        .tab-metrica .icon-color { color: #4f46e5; } .tab-metrica.active-tab { color: #3730a3; border-bottom-color: #4f46e5; background: rgba(79, 70, 229, 0.05); }
+        .dark .tab-metrica.active-tab { color: #a5b4fc; border-bottom-color: #818cf8; background: rgba(99, 102, 241, 0.15); }
+        
+        .tab-escalas .icon-color { color: #10b981; } .tab-escalas.active-tab { color: #065f46; border-bottom-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        .dark .tab-escalas.active-tab { color: #6ee7b7; border-bottom-color: #34d399; background: rgba(16, 185, 129, 0.15); }
+
+        .card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; padding: 1.5rem; transition: background-color 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        
+        /* Métrica y Escalas UI */
+        .fraction-select { appearance: none; text-align: center; text-align-last: center; padding: 0 !important; background: transparent; width: 100%; display: block; }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        input[readonly] { cursor: default; }
+        
+        .opus-input { background-color: #f8fafc; border: 1px solid #cbd5e1; color: #334155; border-radius: 0.75rem; transition: all 0.2s; padding: 0.75rem 1rem; width: 100%; outline: none; }
+        .opus-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); background-color: #ffffff; }
+        select.escala-select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.1em 1.1em; padding-right: 2rem; }
+
+        .correct-step { border-color: #10b981 !important; background-color: #ecfdf5 !important; }
+        .incorrect-step { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        .select-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #b91c1c !important; }
+        .select-success { border-color: #10b981 !important; background-color: #ecfdf5 !important; color: #047857 !important; }
+        .locked-step { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.3s ease; }
+        .highlight-char { color: #ea580c; font-weight: 800; } 
+        
+        .playing-note path { fill: #2563eb !important; stroke: #2563eb !important; transition: fill 0.05s, stroke 0.05s; }
+        .playing-label { transform: scale(1.4) translateY(-4px); color: #2563eb !important; text-shadow: 0 4px 6px rgba(37, 99, 235, 0.3); transition: all 0.1s ease-out; }
+        
+        .modal-overlay { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); }
+
+        /* Dark Mode Global */
+        html.dark { color-scheme: dark; }
+        .dark body { background-color: #020617; color: #f8fafc; }
+        .dark .bg-white { background-color: #0f172a !important; }
+        .dark .bg-slate-50 { background-color: #1e293b !important; }
+        .dark .bg-slate-100 { background-color: #0f172a !important; }
+        .dark .border-slate-100, .dark .border-slate-200 { border-color: #1e293b !important; }
+        .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: #f8fafc !important; }
+        .dark .text-slate-600, .dark .text-slate-500 { color: #94a3b8 !important; }
+        .dark .tabs-container { background: #020617; border-bottom-color: #1e293b; }
+        .dark .nav-btn { color: #64748b; }
+        .dark .card { background: #0f172a; border-color: #1e293b; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
+        .dark .opus-input { background-color: #020617; border-color: #334155; color: #f8fafc; }
+        .dark .opus-input:focus { background-color: #0f172a; border-color: #6366f1; }
+        .dark .correct-step { border-color: #059669 !important; background-color: rgba(16, 185, 129, 0.1) !important; }
+        .dark .incorrect-step { border-color: #dc2626 !important; background-color: rgba(239, 68, 68, 0.1) !important; }
+        .dark .select-success { border-color: #10b981 !important; background-color: rgba(16, 185, 129, 0.2) !important; color: #6ee7b7 !important; }
+        .dark .select-error { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.2) !important; color: #fca5a5 !important; }
+        .dark .highlight-char { color: #fb923c; }
+        .dark .playing-note path { fill: #60a5fa !important; stroke: #60a5fa !important; }
+        .dark .playing-label { color: #60a5fa !important; text-shadow: 0 4px 6px rgba(96, 165, 250, 0.3); }
+        .dark #help-metrica>div, .dark #help-escalas>div, .dark #modal-ayuda-caracteristicas>div, .dark #modal-ayuda-acordes>div { background-color: #0f172a !important; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 pb-16 transition-colors min-h-screen flex flex-col">
+    
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex flex-col gap-0.5">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 p-1.5 rounded-lg text-white shadow-sm"><i data-lucide="flask-conical" class="w-5 h-5"></i></div>
+                    <h1 class="text-xl font-black tracking-tight">OpusLab <span class="text-indigo-600">2.0</span></h1>
+                </div>
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Por Juan Miguel Rios Redondo</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleTheme()" class="p-2 bg-slate-100 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors shadow-sm dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300" title="Alternar Modo Oscuro">
+                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+        <div class="tabs-container">
+            <div class="tabs-wrapper" id="main-tabs">
+                <button onclick="showTab('metrica')" class="nav-btn tab-metrica active-tab" data-tab="metrica">
+                    <i data-lucide="clock" class="w-5 h-5 icon-color"></i><span>Tipos de Compases</span>
+                </button>
+                <button onclick="showTab('escalas')" class="nav-btn tab-escalas" data-tab="escalas">
+                    <i data-lucide="fingerprint" class="w-5 h-5 icon-color"></i><span>Escalas Modales</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl w-full mx-auto p-4 md:p-8 flex-grow">
+        
+        <!-- PESTAÑA 1: TIPOS DE COMPASES -->
+        <div id="metrica" class="tab-content active space-y-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Análisis Métrico</h2>
+                    <p class="text-sm font-medium text-slate-500 mt-1">Jerarquía visual de pulsos, subdivisiones y amalgamas.</p>
+                </div>
+                <button onclick="openModal('help-metrica')" class="p-3 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl transition-colors dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50">
+                    <i data-lucide="info" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <section class="card grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-6">
+                <!-- Controles -->
+                <div class="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 h-full">
+                    <div class="flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl mb-8 w-full max-w-[250px]" id="metrica-tabs">
+                        <button onclick="MetricaApp.setMode('simple')" id="tab-simple" class="flex-1 py-2 rounded-lg text-xs font-black uppercase transition-all bg-white text-indigo-600 shadow-sm dark:bg-slate-700 dark:text-indigo-400">SIM</button>
+                        <button onclick="MetricaApp.setMode('compuesto')" id="tab-compuesto" class="flex-1 py-2 rounded-lg text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400">COM</button>
+                        <button onclick="MetricaApp.setMode('libre')" id="tab-libre" class="flex-1 py-2 rounded-lg text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400">LIB</button>
+                    </div>
+                    
+                    <!-- FRACCIÓN ESTRUCTURADA -->
+                    <div class="relative flex flex-col items-center w-full">
+                        <div class="flex items-center gap-4">
+                            <button onclick="MetricaApp.changeNum(-1)" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 active:scale-95 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"><i data-lucide="minus" class="w-5 h-5"></i></button>
+                            <input type="number" id="metrica-num" value="4" onchange="MetricaApp.handleNumInput(this.value)" class="w-24 text-7xl font-serif font-black text-center text-slate-900 dark:text-white bg-transparent outline-none p-0 border-none rounded-lg focus:bg-indigo-50 dark:focus:bg-slate-800 focus:ring-2 focus:ring-indigo-200 transition-colors">
+                            <button onclick="MetricaApp.changeNum(1)" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 active:scale-95 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                        </div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest absolute -top-5">Cant. Valores</p>
+                        
+                        <div class="w-40 h-2 bg-slate-900 dark:bg-slate-600 my-4 rounded-full"></div>
+                        
+                        <div class="w-full relative flex justify-center">
+                            <select id="metrica-den" onchange="MetricaApp.update()" class="fraction-select text-7xl font-serif font-black outline-none text-slate-900 dark:text-white cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 w-auto">
+                                <option value="1">1</option><option value="2">2</option><option value="4" selected>4</option><option value="8">8</option><option value="16">16</option>
+                            </select>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest absolute -bottom-5 w-full text-center">Figura Base</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen (UP y UC) -->
+                <div class="space-y-4">
+                    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-5 rounded-3xl border border-indigo-100 dark:border-indigo-800/50 flex items-center gap-5 shadow-sm" id="up-container">
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-indigo-50 dark:border-slate-700 shrink-0" id="metrica-svg-container"></div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest" id="metrica-up-label">Unidad de Tiempo</p>
+                            <p id="metrica-up-name" class="text-lg font-black text-slate-800 dark:text-white leading-tight truncate mt-1">Negra</p>
+                            <p id="metrica-true-pulse" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-bold">4 pulsos por compás</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 dark:bg-slate-800 p-5 rounded-3xl border border-slate-800 dark:border-slate-700 flex items-center gap-5 shadow-md">
+                        <div class="bg-white/10 dark:bg-black/20 p-4 rounded-2xl shrink-0 flex items-center gap-1 overflow-x-auto" id="metrica-uc-svg-container"></div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Unidad de Compás</p>
+                            <p id="metrica-uc-name" class="text-lg font-black text-white leading-tight truncate mt-1">Redonda</p>
+                            <p class="text-[11px] text-slate-300 dark:text-slate-400 mt-1 font-bold">Duración total</p>
+                        </div>
+                    </div>
+
+                    <div id="metrica-group-container" class="bg-orange-50 dark:bg-orange-900/20 p-5 rounded-3xl border border-orange-100 dark:border-orange-800/50" style="display:none;">
+                        <p class="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-3">Agrupación Interna (Phrasing)</p>
+                        <input type="text" id="metrica-grouping" value="2+3" onchange="MetricaApp.handleGroupingChange()" class="w-full bg-white dark:bg-slate-800 border border-orange-200 dark:border-orange-700/50 rounded-xl p-3 text-base font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-orange-400" />
+                        <p id="metrica-group-error" class="text-[10px] text-red-600 dark:text-red-400 mt-2 hidden font-bold flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> La suma debe ser igual al numerador.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabla Analítica -->
+            <section class="card overflow-hidden p-0">
+                <div class="px-6 py-5 bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <h2 id="metrica-table-title" class="text-sm font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest"><i data-lucide="bar-chart-2" class="w-4 h-4 inline-block mr-2 -mt-1"></i> Duración en Tiempos</h2>
+                </div>
+                <div id="metrica-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/50 max-h-[500px] overflow-y-auto"></div>
+            </section>
+        </div>
+
+        <!-- PESTAÑA 2: ESCALAS MODALES -->
+        <div id="escalas" class="tab-content space-y-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tight text-center sm:text-left">Identificación Modal</h2>
+                    <p class="text-sm font-medium text-slate-500 mt-1 text-center sm:text-left">Deduce alteraciones y nombres a partir de estructuras interválicas.</p>
+                </div>
+                <button onclick="openModal('help-escalas')" class="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl transition-colors dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 w-full sm:w-auto flex justify-center">
+                    <i data-lucide="info" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="w-full text-center mb-6">
+                <p class="text-xs md:text-sm text-emerald-600 dark:text-emerald-400 font-extrabold tracking-widest uppercase inline-block bg-emerald-50 dark:bg-emerald-900/20 px-5 py-2.5 rounded-xl border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                    "CADA ESCALA TIENE UN ADN, APRÉNDELO A RECONOCER."
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="card flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border-l-4 border-l-emerald-500 dark:border-l-emerald-400">
+                    <div class="w-full md:w-1/2">
+                        <h2 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white" id="modo-actual-titulo">Genera un modo para iniciar</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-slate-100 dark:bg-slate-800 inline-block px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700" id="modo-actual-padre">Familia Padre: ---</p>
+                    </div>
+                    <div class="w-full md:w-1/2 flex flex-col sm:flex-row gap-3">
+                        <select id="filtro-familia" class="escala-select opus-input px-4 py-3 font-semibold cursor-pointer w-full sm:w-1/2 text-sm shadow-sm">
+                            <option value="Todas">Todas las Familias</option>
+                            <option value="Mayor">Escala Mayor</option>
+                            <option value="Menor Armónica">Menor Armónica</option>
+                            <option value="Menor Melódica">Menor Melódica</option>
+                            <option value="Mayor Armónica">Mayor Armónica</option>
+                        </select>
+                        <button onclick="EscalasApp.generarModo()" class="w-full sm:w-1/2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Generar
+                        </button>
+                    </div>
+                </div>
+
+                <section id="partitura-section" class="card hidden flex-col items-center relative overflow-hidden bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-t border-slate-200 dark:border-slate-700">
+                    <div class="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-2 gap-4">
+                        <h3 class="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="music" class="w-5 h-5 text-slate-400"></i> Partitura Base</h3>
+                        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                            <button onclick="EscalasApp.reproducirEscala()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md flex items-center gap-2 transition-colors flex-1 sm:flex-none justify-center">
+                                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Escuchar
+                            </button>
+                            <div class="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm px-2 py-2 w-full sm:w-auto">
+                                <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 px-3 py-1 rounded-lg transition-colors w-full justify-center sm:w-auto">
+                                    <input type="checkbox" id="toggle-notas" onchange="EscalasApp.toggleNotas()" class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+                                    <span>Ayuda visual</span>
+                                </label>
+                                <div class="border-l border-slate-200 dark:border-slate-600 pl-2 ml-1" id="notacion-selector-container" style="display: none;">
+                                    <select id="tipo-notacion" onchange="EscalasApp.actualizarLabelsNotacion()" class="escala-select text-xs text-slate-600 dark:text-slate-300 font-bold bg-transparent outline-none cursor-pointer p-0 pr-4">
+                                        <option value="americano">C D E</option>
+                                        <option value="latino">Do Re Mi</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="staff-container" class="w-full flex justify-center max-w-[600px] h-[140px] overflow-hidden bg-white dark:bg-slate-100 rounded-xl p-2 border border-slate-200 shadow-inner"></div>
+                    <div class="w-full max-w-[600px] flex flex-col px-2 sm:px-8 mt-4 relative gap-4">
+                        <div id="notas-nombres" class="flex justify-between w-full opacity-0 transition-opacity duration-300"></div>
+                        <div id="intervalos-seleccionados" class="flex justify-between w-full"></div>
+                    </div>
+                </section>
+
+                <div id="evaluacion-form" class="space-y-6 hidden">
+                    <div class="card" id="paso-1-container">
+                        <h3 class="font-bold text-lg mb-5 text-slate-800 dark:text-white flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-1">1</span>
+                            Distancia Interválica
+                        </h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4 ml-0 sm:ml-11" id="intervalos-container"></div>
+                    </div>
+
+                    <div class="card locked-step" id="paso-2">
+                        <h3 class="font-bold text-lg mb-5 text-slate-800 dark:text-white flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-2">2</span>
+                            Naturaleza de la 3ra
+                        </h3>
+                        <div class="flex flex-col sm:flex-row gap-6 px-2 ml-0 sm:ml-11">
+                            <label class="flex items-center gap-3 cursor-pointer text-base font-semibold text-slate-700 dark:text-slate-300 w-full p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <input type="radio" name="tipoEscala" value="Mayor" onchange="EscalasApp.validarPaso2()" class="w-5 h-5 text-emerald-600 border-slate-300 focus:ring-emerald-500">
+                                <span>Con 3ra Mayor (3 o b4 actuando como 3)</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer text-base font-semibold text-slate-700 dark:text-slate-300 w-full p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <input type="radio" name="tipoEscala" value="Menor" onchange="EscalasApp.validarPaso2()" class="w-5 h-5 text-emerald-600 border-slate-300 focus:ring-emerald-500">
+                                <span>Con 3ra Menor</span>
+                            </label>
+                        </div>
+                        <div id="info-enarmonia-3ra" class="ml-0 sm:ml-11 mt-4 text-xs text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-xl p-4 leading-relaxed hidden"></div>
+                    </div>
+
+                    <div class="card locked-step" id="paso-3">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-white flex items-center gap-3">
+                                <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-3">3</span>
+                                Modo Diatónico
+                            </h3>
+                            <button onclick="openModal('modal-ayuda-caracteristicas')" class="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-2 bg-slate-50 dark:bg-slate-800 rounded-full" title="Ayuda: Notas características">
+                                <i data-lucide="help-circle" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="ml-0 sm:ml-11">
+                            <select id="modo-base" class="escala-select opus-input w-full font-semibold cursor-pointer" onchange="EscalasApp.validarPaso3()">
+                                <option value="">Selecciona el modo base...</option>
+                            </select>
+                            <div id="formula-container" class="mt-6 p-6 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl hidden flex-col gap-4 font-mono text-base text-slate-500 shadow-inner overflow-x-auto"></div>
+                        </div>
+                    </div>
+
+                    <div class="card locked-step" id="paso-4">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-white flex items-center gap-3">
+                                <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-4">4</span>
+                                Acorde de Verificación
+                            </h3>
+                            <button onclick="openModal('modal-ayuda-acordes')" class="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-2 bg-slate-50 dark:bg-slate-800 rounded-full" title="Ayuda: Acordes base">
+                                <i data-lucide="help-circle" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="ml-0 sm:ml-11">
+                            <select id="acorde-verificacion" onchange="EscalasApp.validarPaso4()" class="escala-select opus-input w-full font-semibold cursor-pointer">
+                                <option value="">Selecciona el acorde de verificación...</option>
+                                <option value="Xmaj7">Xmaj7</option>
+                                <option value="Xm7">Xm7</option>
+                                <option value="X7">X7</option>
+                                <option value="Xm(b6)">Xm(b6)</option>
+                                <option value="X7sus(b9)">X7sus(b9)</option>
+                                <option value="Xm7(b5)">Xm7(b5)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card locked-step" id="paso-5">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800 dark:text-white flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-5">5</span>
+                            Nombre de la Escala
+                        </h3>
+                        <div class="ml-0 sm:ml-11">
+                            <select id="nombre-final" class="escala-select opus-input w-full font-bold cursor-pointer text-slate-800 dark:text-white text-lg" onchange="EscalasApp.validarPaso5()">
+                                <option value="">Selecciona la escala correcta...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultados -->
+                <div id="resultados-panel" class="hidden mt-8 card border-t-4 border-t-emerald-600 dark:border-t-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10">
+                    <h3 class="text-2xl font-extrabold text-emerald-900 dark:text-emerald-400 flex items-center gap-3 mb-6 border-b border-emerald-200 dark:border-emerald-800/50 pb-4">
+                        <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-600"></i> Análisis Completo
+                    </h3>
+                    <div class="space-y-5">
+                        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-emerald-100 dark:border-slate-700 flex flex-col items-center w-full">
+                            <span class="block text-xs font-bold text-emerald-400 dark:text-slate-400 uppercase tracking-widest mb-3 text-center w-full">Estructura Interválica Analizada</span>
+                            <span class="font-mono text-lg md:text-xl font-black tracking-widest text-emerald-800 dark:text-emerald-400 text-center w-full" style="word-spacing: 0.3rem;" id="resumen-intervalos"></span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-emerald-100 dark:border-slate-700"><span class="block text-[10px] font-bold text-emerald-400 dark:text-slate-400 uppercase mb-2">Naturaleza</span><span class="font-black text-xl text-emerald-900 dark:text-emerald-300" id="resumen-3ra"></span></div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-emerald-100 dark:border-slate-700"><span class="block text-[10px] font-bold text-emerald-400 dark:text-slate-400 uppercase mb-2">Derivación Diatónica</span><span class="font-black text-xl text-emerald-900 dark:text-emerald-300" id="resumen-base"></span></div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-emerald-100 dark:border-slate-700"><span class="block text-[10px] font-bold text-emerald-400 dark:text-slate-400 uppercase mb-2">Acorde Base</span><span class="font-mono font-black text-xl text-slate-600 dark:text-slate-300" id="resumen-acorde"></span></div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-md border-2 border-emerald-200 dark:border-emerald-700/50 bg-emerald-50/30 dark:bg-emerald-900/20"><span class="block text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-2">Acorde Real</span><span class="font-black text-2xl font-mono text-emerald-700 dark:text-emerald-400" id="resumen-acorde-real"></span></div>
+                            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-md border-2 border-pink-100 dark:border-pink-900/50 bg-pink-50/20 dark:bg-pink-900/10 lg:col-span-2"><span class="block text-[10px] font-bold text-pink-500 dark:text-pink-400 uppercase mb-2">Alteración Adicional (Color)</span><span class="font-black text-2xl text-pink-600 dark:text-pink-400 font-mono tracking-widest" id="resumen-alteracion"></span></div>
+                        </div>
+                        <div class="bg-emerald-600 dark:bg-emerald-700 text-white p-8 rounded-3xl shadow-xl mt-8 text-center relative overflow-hidden">
+                            <div class="absolute -right-10 -top-10 opacity-10"><i data-lucide="fingerprint" class="w-48 h-48"></i></div>
+                            <span class="block text-[10px] font-black text-emerald-200 uppercase tracking-[0.2em] mb-2 relative z-10">ADN Modal Identificado</span>
+                            <span class="font-black text-4xl md:text-5xl block relative z-10 tracking-tight" id="resumen-nombre"></span>
+                            <span class="font-bold text-emerald-300 mt-2 block uppercase tracking-widest text-sm relative z-10" id="resumen-origen"></span>
+                            <div class="mt-6 border-t border-emerald-500/50 pt-6 relative z-10 hidden" id="nombres-alternos-container">
+                                <span class="font-medium text-emerald-100 block bg-emerald-800/40 p-4 rounded-xl leading-relaxed text-sm" id="nombres-alternos"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODALES DE AYUDA -->
+    <div id="help-metrica" class="hidden modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-xl w-full p-8 md:p-10 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('help-metrica')" class="absolute top-6 right-6 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-3"><i data-lucide="book-open" class="text-indigo-600"></i> Conceptos Teóricos</h3>
+            <div class="space-y-5 text-sm text-slate-700 dark:text-slate-300">
+                <div class="bg-indigo-50 dark:bg-indigo-900/30 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                    <h4 class="font-black text-indigo-800 dark:text-indigo-400 uppercase text-xs mb-2">Compás Simple</h4>
+                    <p class="leading-relaxed">Posee numeradores <strong>2, 3 o 4</strong>. <span class="font-bold text-indigo-900 dark:text-indigo-200">El denominador es la unidad de tiempo y vale un tiempo.</span> Tiene subdivisión binaria (se divide en mitades enteras).</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="font-black text-slate-800 dark:text-slate-400 uppercase text-xs mb-2">Compás Compuesto</h4>
+                    <p class="leading-relaxed">Posee numeradores <strong>6, 9 o 12</strong>. <span class="font-bold text-slate-900 dark:text-slate-200">El denominador vale un tercio de tiempo</span> (es la unidad de subdivisión). La Unidad de Tiempo real siempre es una figura con puntillo.</p>
+                </div>
+                <div class="bg-orange-50 dark:bg-orange-900/30 p-5 rounded-2xl border border-orange-100 dark:border-orange-800">
+                    <h4 class="font-black text-orange-800 dark:text-orange-400 uppercase text-xs mb-2">Compás de Amalgama (Libre)</h4>
+                    <p class="leading-relaxed">Se forma sumando compases simples (ej. 5/8, 7/8). Produce pulsos irregulares o asimétricos definidos por la agrupación interna de las subdivisiones (ej. 5 = 3+2).</p>
+                </div>
+            </div>
+            
+            <h4 class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mt-8 mb-4 border-t border-slate-100 dark:border-slate-700 pt-6"><i data-lucide="keyboard" class="w-4 h-4 inline-block mr-2 -mt-1"></i> Atajos de Teclado</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Sumar Numerador</span><kbd class="font-mono font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">↑</kbd></div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Restar Numerador</span><kbd class="font-mono font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">↓</kbd></div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Cambiar Modo</span><kbd class="font-mono font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">M</kbd></div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Cerrar Ayuda</span><kbd class="font-mono font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">Esc</kbd></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="help-escalas" class="hidden modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-xl w-full p-8 md:p-10 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('help-escalas')" class="absolute top-6 right-6 text-slate-400 hover:text-emerald-600"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-3"><i data-lucide="fingerprint" class="text-emerald-600"></i> Modos Diatónicos</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mb-8 leading-relaxed">Identifica escalas modales deduciendo las alteraciones respecto a los modos paralelos base. Utiliza los botones de interrogación <span class="inline-flex bg-slate-100 dark:bg-slate-700 rounded-full w-5 h-5 items-center justify-center text-xs font-black">?</span> en cada paso para repasar la teoría subyacente de notas características y acordes asociados.</p>
+            
+            <h4 class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-4 border-t border-slate-100 dark:border-slate-700 pt-6"><i data-lucide="keyboard" class="w-4 h-4 inline-block mr-2 -mt-1"></i> Atajos de Teclado</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Generar Modo</span><kbd class="font-mono font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">G</kbd></div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Escuchar (Play)</span><kbd class="font-mono font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">P</kbd></div>
+                <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex justify-between items-center border border-slate-100 dark:border-slate-700"><span class="font-semibold text-slate-600 dark:text-slate-400">Cerrar Ayuda</span><kbd class="font-mono font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">Esc</kbd></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-ayuda-caracteristicas" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[110] p-4 modal-overlay">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-lg w-full p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-ayuda-caracteristicas')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-3">
+                <i data-lucide="music" class="text-emerald-600 w-8 h-8"></i> Notas Características
+            </h3>
+            <div class="space-y-6 text-sm text-slate-700 dark:text-slate-300">
+                <div class="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <h4 class="font-black text-emerald-700 dark:text-emerald-400 uppercase text-xs mb-3 tracking-widest border-b border-emerald-100 dark:border-emerald-900/50 pb-2">Modos Mayores</h4>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Jónico</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">4 & 7</span></li>
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Lidio</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">#4 & 7</span></li>
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Mixolidio</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">b7 & 4</span></li>
+                    </ul>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <h4 class="font-black text-emerald-700 dark:text-emerald-400 uppercase text-xs mb-3 tracking-widest border-b border-emerald-100 dark:border-emerald-900/50 pb-2">Modos Menores (con 2da Mayor)</h4>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Dórico</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">6 & 2</span></li>
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Eólico</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">b6 & 2</span></li>
+                    </ul>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <h4 class="font-black text-emerald-700 dark:text-emerald-400 uppercase text-xs mb-3 tracking-widest border-b border-emerald-100 dark:border-emerald-900/50 pb-2">Modos Menores (con 2da Menor)</h4>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Frigio</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">b2 & 5</span></li>
+                        <li class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-200">Locrio</span> <span class="font-mono text-emerald-600 dark:text-emerald-400 font-black bg-white dark:bg-slate-800 px-2 py-1 rounded shadow-sm">b5 & b2</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-ayuda-acordes" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[110] p-4 modal-overlay">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-ayuda-acordes')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-4 flex items-center gap-3">
+                <i data-lucide="layers" class="text-emerald-600 w-8 h-8"></i> Acordes Base
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 font-medium leading-relaxed bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700">Relación teórica del acorde base generado por la superposición de terceras (o construcción por cuartas en el caso del Frigio) en cada modo diatónico:</p>
+            <div class="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+                <div class="flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"><span class="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">Xmaj7</span> <span class="font-bold text-slate-800 dark:text-slate-200">Jónico y Lidio</span></div>
+                <div class="flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"><span class="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">Xm7</span> <span class="font-bold text-slate-800 dark:text-slate-200">Dórico</span></div>
+                <div class="flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"><span class="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">X7</span> <span class="font-bold text-slate-800 dark:text-slate-200">Mixolidio</span></div>
+                <div class="flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"><span class="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">Xm(b6)</span> <span class="font-bold text-slate-800 dark:text-slate-200">Eólico</span></div>
+                <div class="flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"><span class="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">X7sus(b9)</span> <span class="font-bold text-slate-800 dark:text-slate-200">Frigio</span></div>
+                <div class="flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"><span class="font-mono text-emerald-600 dark:text-emerald-400 font-black text-base">Xm7(b5)</span> <span class="font-bold text-slate-800 dark:text-slate-200">Locrio</span></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN GLOBAL ESTRICTA
+        // ==========================================
+        window.currentView = 'metrica';
+        
+        window.showTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active-tab'));
+            
+            const contentEl = document.getElementById(tabId);
+            const btnEl = document.querySelector(`.tab-${tabId}`);
+            
+            if (contentEl) contentEl.classList.add('active');
+            if (btnEl) btnEl.classList.add('active-tab');
+            
+            window.currentView = tabId;
+            if(tabId === 'metrica' && window.MetricaApp) window.MetricaApp.update();
+            if(tabId === 'escalas' && window.EscalasApp && window.EscalasApp.scale) window.EscalasApp.renderVexFlow();
+        };
+
+        window.openModal = function(id) { 
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+            }
+        };
+        window.closeModal = function(id) { 
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
+        };
+
+        window.toggleTheme = function() {
+            const doc = document.documentElement;
+            const isDark = doc.classList.contains('dark');
+            if (isDark) {
+                doc.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                doc.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+            // Forzar re-render de VexFlow si estamos en escalas para actualizar colores
+            if (window.currentView === 'escalas' && window.EscalasApp && window.EscalasApp.scale) {
+                setTimeout(() => window.EscalasApp.renderVexFlow(), 50);
+            }
+            if (window.currentView === 'metrica' && window.MetricaApp) {
+                setTimeout(() => window.MetricaApp.update(), 50);
+            }
+        };
+
+        // ==========================================
+        // BASE DE DATOS ESCALAS
+        // ==========================================
+        const modosDB = [
+            { familia: 'Mayor', grado: 1, intervalos: ['1', '2', '3', '4', '5', '6', '7'], tipo: 'Mayor', base: ['Jónico'], nombres: ['Jónico'] },
+            { familia: 'Mayor', grado: 2, intervalos: ['1', '2', 'b3', '4', '5', '6', 'b7'], tipo: 'Menor', base: ['Dórico'], nombres: ['Dórico'] },
+            { familia: 'Mayor', grado: 3, intervalos: ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'], tipo: 'Menor', base: ['Frigio'], nombres: ['Frigio'] }, 
+            { familia: 'Mayor', grado: 4, intervalos: ['1', '2', '3', '#4', '5', '6', '7'], tipo: 'Mayor', base: ['Lidio'], nombres: ['Lidio'] },
+            { familia: 'Mayor', grado: 5, intervalos: ['1', '2', '3', '4', '5', '6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio'] },
+            { familia: 'Mayor', grado: 6, intervalos: ['1', '2', 'b3', '4', '5', 'b6', 'b7'], tipo: 'Menor', base: ['Eólico'], nombres: ['Eólico'] }, 
+            { familia: 'Mayor', grado: 7, intervalos: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'], tipo: 'Menor', base: ['Locrio'], nombres: ['Locrio'] },
+
+            { familia: 'Menor Armónica', grado: 1, intervalos: ['1', '2', 'b3', '4', '5', 'b6', '7'], tipo: 'Menor', base: ['Eólico'], nombres: ['Eólico ♮7', 'Menor Armónica'] },
+            { familia: 'Menor Armónica', grado: 2, intervalos: ['1', 'b2', 'b3', '4', 'b5', '6', 'b7'], tipo: 'Menor', base: ['Locrio'], nombres: ['Locrio ♮6', 'Locrio natural 6'] },
+            { familia: 'Menor Armónica', grado: 3, intervalos: ['1', '2', '3', '4', '#5', '6', '7'], tipo: 'Mayor', base: ['Jónico'], nombres: ['Jónico #5', 'Jónico Aumentado'] },
+            { familia: 'Menor Armónica', grado: 4, intervalos: ['1', '2', 'b3', '#4', '5', '6', 'b7'], tipo: 'Menor', base: ['Dórico'], nombres: ['Dórico #4'] },
+            { familia: 'Menor Armónica', grado: 5, intervalos: ['1', 'b2', '3', '4', '5', 'b6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio b2 b6', 'Mixolidio b9 b13', 'Frigio Dominante'] }, 
+            { familia: 'Menor Armónica', grado: 6, intervalos: ['1', '#2', '3', '#4', '5', '6', '7'], tipo: 'Mayor', base: ['Lidio'], nombres: ['Lidio #2', 'Lidio #9'] },
+            { familia: 'Menor Armónica', grado: 7, intervalos: ['1', 'b2', 'b3', 'b4', 'b5', 'b6', 'bb7'], tipo: 'Menor', base: ['Locrio'], nombres: ['Locrio b4 bb7', 'Superlocrio bb7'] },
+
+            { familia: 'Menor Melódica', grado: 1, intervalos: ['1', '2', 'b3', '4', '5', '6', '7'], tipo: 'Menor', base: ['Dórico'], nombres: ['Dórico ♮7', 'Menor Melódica'] },
+            { familia: 'Menor Melódica', grado: 2, intervalos: ['1', 'b2', 'b3', '4', '5', '6', 'b7'], tipo: 'Menor', base: ['Frigio'], nombres: ['Frigio ♮6', 'Dórico b2', 'Dórico b9'] },
+            { familia: 'Menor Melódica', grado: 3, intervalos: ['1', '2', '3', '#4', '#5', '6', '7'], tipo: 'Mayor', base: ['Lidio'], nombres: ['Lidio #5', 'Lidio Aumentado'] },
+            { familia: 'Menor Melódica', grado: 4, intervalos: ['1', '2', '3', '#4', '5', '6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio #4', 'Lidio b7'] },
+            { familia: 'Menor Melódica', grado: 5, intervalos: ['1', '2', '3', '4', '5', 'b6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio b6', 'Mixolidio b13'] },
+            { familia: 'Menor Melódica', grado: 6, intervalos: ['1', '2', 'b3', '4', 'b5', 'b6', 'b7'], tipo: 'Menor', base: ['Locrio'], nombres: ['Locrio ♮2', 'Locrio ♮9', 'Locrio 2'] },
+            { familia: 'Menor Melódica', grado: 7, intervalos: ['1', 'b2', '#2', 'b4', 'b5', 'b6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio Alterado', 'Superlocrio'] },
+
+            { familia: 'Mayor Armónica', grado: 1, intervalos: ['1', '2', '3', '4', '5', 'b6', '7'], tipo: 'Mayor', base: ['Jónico'], nombres: ['Jónico b6', 'Mayor Armónica'] }, 
+            { familia: 'Mayor Armónica', grado: 2, intervalos: ['1', '2', 'b3', '4', 'b5', '6', 'b7'], tipo: 'Menor', base: ['Locrio'], nombres: ['Locrio ♮2 ♮6', 'Dórico b5'] },
+            { familia: 'Mayor Armónica', grado: 3, intervalos: ['1', 'b2', '#2', 'b4', '5', 'b6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio b2 #2 b6', 'Mixolidio b9 #9 b13', 'Frigio b4'] },
+            { familia: 'Mayor Armónica', grado: 4, intervalos: ['1', '2', 'b3', '#4', '5', '6', '7'], tipo: 'Menor', base: ['Dórico'], nombres: ['Dórico #4 ♮7', 'Lidio b3'] }, 
+            { familia: 'Mayor Armónica', grado: 5, intervalos: ['1', 'b2', '3', '4', '5', '6', 'b7'], tipo: 'Mayor', base: ['Mixolidio'], nombres: ['Mixolidio b2', 'Mixolidio b9'] },
+            { familia: 'Mayor Armónica', grado: 6, intervalos: ['1', '#2', '3', '#4', '#5', '6', '7'], tipo: 'Mayor', base: ['Lidio'], nombres: ['Lidio #2 #5', 'Lidio #9 #5', 'Lidio Aumentado #2'] },
+            { familia: 'Mayor Armónica', grado: 7, intervalos: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'bb7'], tipo: 'Menor', base: ['Locrio'], nombres: ['Locrio bb7'] }
+        ];
+
+        const formulasModosBase = {
+            'Jónico': { formula: ['1', '2', '3', '4', '5', '6', '7'], char: ['4', '7'] },
+            'Dórico': { formula: ['1', '2', 'b3', '4', '5', '6', 'b7'], char: ['6', '2'] },
+            'Frigio': { formula: ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'], char: ['b2', '5'] },
+            'Lidio': { formula: ['1', '2', '3', '#4', '5', '6', '7'], char: ['#4', '7'] },
+            'Mixolidio': { formula: ['1', '2', '3', '4', '5', '6', 'b7'], char: ['b7', '4'] },
+            'Eólico': { formula: ['1', '2', 'b3', '4', '5', 'b6', 'b7'], char: ['b6', '2'] },
+            'Locrio': { formula: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'], char: ['b5', 'b2'] }
+        };
+
+        const mapaAcordesVerificacion = {
+            'Jónico': 'Xmaj7', 'Dórico': 'Xm7', 'Frigio': 'X7sus(b9)', 
+            'Lidio': 'Xmaj7', 'Mixolidio': 'X7', 'Eólico': 'Xm(b6)', 'Locrio': 'Xm7(b5)'
+        };
+
+        const intervalosDeAcordes = {
+            'Xmaj7': ['1', '3', '5', '7'], 
+            'Xm7': ['1', 'b3', '5', 'b7'], 
+            'X7': ['1', '3', '5', 'b7'], 
+            'Xm(b6)': ['1', 'b3', '5', 'b6'],
+            'X7sus(b9)': ['1', '4', '5', 'b7'],
+            'Xm7(b5)': ['1', 'b3', 'b5', 'b7']
+        };
+
+        const opcionesPorGrado = {
+            1: ['1'], 2: ['b2', '2', '#2'], 3: ['b3', '3', '#2'],
+            4: ['b4', '4', '#4'], 5: ['b5', '5', '#5'],
+            6: ['b6', '6'], 7: ['bb7', 'b7', '7']
+        };
+
+        const raicesDisponibles = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+        const semitonosMap = { '1':0, 'b2':1, '2':2, '#2':3, 'b3':3, '3':4, 'b4':4, '4':5, '#4':6, 'b5':6, '5':7, '#5':8, 'b6':8, '6':9, 'bb7':9, 'b7':10, '7':11 };
+        const letrasBase = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        const valorLetras = { 'C':0, 'D':2, 'E':4, 'F':5, 'G':7, 'A':9, 'B':11 };
+        const mapaLatino = { 'C': 'Do', 'D': 'Re', 'E': 'Mi', 'F': 'Fa', 'G': 'Sol', 'A': 'La', 'B': 'Si' };
+        const romanos = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+
+        // ==========================================
+        // MÉTICA PRO APP LOGIC
+        // ==========================================
+        window.MetricaApp = {
+            state: { mode: 'simple', num: 4, customNum: 5, den: 4, grouping: '2+3' },
+            
+            setText: function(id, text) { const el = document.getElementById(id); if (el) el.innerText = text; },
+            setHTML: function(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; },
+            
+            renderFlags: function(count, color) {
+                let flags = "";
+                for(let i=0; i<count; i++) flags += `<path d="M16 ${4+(i*2.5)}c4 0 4 3 4 3" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/>`;
+                return flags;
+            },
+            
+            getFigures: function(color="#fff") {
+                return [
+                    { name: 'Redonda', sub: 1, svg: `<path d="M12 7c-4.4 0-8 2.2-8 5s3.6 5 8 5 8-2.2 8-5-3.6-5-8-5zm0 8c-3.3 0-6-1.3-6-3s2.7-3 6-3 6 1.3 6 3-2.7 3-6 3z" fill="${color}" />`, type:'simple' },
+                    { name: 'Blanca', sub: 2, svg: `<g><path d="M12 14c-2.2 0-4 1.3-4 3s1.8 3 4 3 4-1.3 4-3-1.8-3-4-3z" fill="none" stroke="${color}" stroke-width="2" /><path d="M16 17V4" stroke="${color}" stroke-width="2" /></g>`, type:'simple' },
+                    { name: 'Negra', sub: 4, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${color}" /><path d="M16 17V4" stroke="${color}" stroke-width="2" /></g>`, type:'simple' },
+                    { name: 'Corchea', sub: 8, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${color}" /><path d="M16 17V4" stroke="${color}" stroke-width="2" />${this.renderFlags(1, color)}</g>`, type:'simple' },
+                    { name: 'Semicorchea', sub: 16, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${color}" /><path d="M16 17V4" stroke="${color}" stroke-width="2" />${this.renderFlags(2, color)}</g>`, type:'simple' },
+                    { name: 'Fusa', sub: 32, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${color}" /><path d="M16 17V4" stroke="${color}" stroke-width="2" />${this.renderFlags(3, color)}</g>`, type:'simple' },
+                    { name: 'Semifusa', sub: 64, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${color}" /><path d="M16 17V4" stroke="${color}" stroke-width="2" />${this.renderFlags(4, color)}</g>`, type:'simple' }
+                ];
+            },
+
+            getAllFigures: function(c1="#fff", c2="#334155") {
+                const baseW = this.getFigures(c1);
+                const baseD = this.getFigures(c2);
+                let allW = [...baseW]; let allD = [...baseD];
+                baseW.forEach(f => { if(f.sub>=2) allW.push({...f, name: f.name+' c/ Puntillo', sub: f.sub/1.5, type: 'dotted'})});
+                baseD.forEach(f => { if(f.sub>=2) allD.push({...f, name: f.name+' c/ Puntillo', sub: f.sub/1.5, type: 'dotted'})});
+                return { white: allW.sort((a,b)=>a.sub-b.sub), dark: allD.sort((a,b)=>a.sub-b.sub) };
+            },
+
+            setMode: function(m) {
+                const oldMode = this.state.mode;
+                this.state.mode = m;
+                
+                if (oldMode === 'simple' && m === 'compuesto') {
+                    this.state.num = this.state.num * 3;
+                    this.state.den = this.state.den * 2;
+                } else if (oldMode === 'compuesto' && m === 'simple') {
+                    this.state.num = Math.round(this.state.num / 3);
+                    this.state.den = Math.max(1, Math.round(this.state.den / 2));
+                    if(this.state.num < 2) this.state.num = 2;
+                    if(this.state.num > 4) this.state.num = 4;
+                } else if (m === 'simple' && oldMode !== 'simple') {
+                    this.state.num = 4; this.state.den = 4;
+                } else if (m === 'compuesto' && oldMode !== 'compuesto') {
+                    this.state.num = 6; this.state.den = 8;
+                } else if (m === 'libre') {
+                    this.state.customNum = 5; this.state.den = 8; this.state.grouping = "2+3";
+                }
+                
+                const validDens = [1, 2, 4, 8, 16];
+                if (!validDens.includes(this.state.den)) {
+                    this.state.den = validDens.reduce((prev, curr) => Math.abs(curr - this.state.den) < Math.abs(prev - this.state.den) ? curr : prev);
+                }
+
+                const denEl = document.getElementById('metrica-den');
+                if (denEl) denEl.value = this.state.den;
+                this.update();
+            },
+
+            handleNumInput: function(val) {
+                let parsed = parseInt(val);
+                if(isNaN(parsed)) return;
+                
+                if (this.state.mode === 'simple') {
+                    if (parsed < 2) parsed = 2;
+                    if (parsed > 4) parsed = 4;
+                    this.state.num = parsed;
+                } else if (this.state.mode === 'compuesto') {
+                    const valid = [6, 9, 12];
+                    parsed = valid.reduce((prev, curr) => Math.abs(curr - parsed) < Math.abs(prev - parsed) ? curr : prev);
+                    this.state.num = parsed;
+                } else {
+                    if (parsed < 1) parsed = 1;
+                    this.state.customNum = parsed;
+                    this.validarYGenerarAgrupacion();
+                }
+                this.update();
+            },
+
+            changeNum: function(dir) {
+                if(this.state.mode === 'libre') {
+                    this.state.customNum = Math.max(1, this.state.customNum + dir);
+                    this.validarYGenerarAgrupacion();
+                } else if (this.state.mode === 'simple') {
+                    this.state.num = Math.max(2, Math.min(4, this.state.num + dir));
+                } else if (this.state.mode === 'compuesto') {
+                    const valid = [6, 9, 12];
+                    let idx = valid.indexOf(this.state.num);
+                    if (idx === -1) idx = 0;
+                    idx = Math.max(0, Math.min(2, idx + dir));
+                    this.state.num = valid[idx];
+                }
+                this.update();
+            },
+
+            handleGroupingChange: function() {
+                const inputVal = document.getElementById('metrica-grouping').value;
+                const g = inputVal.split('+').map(Number).filter(n => !isNaN(n));
+                const sum = g.reduce((a,b) => a+b, 0);
+                const errorEl = document.getElementById('metrica-group-error');
+                
+                if (sum !== this.state.customNum) {
+                    if (errorEl) errorEl.classList.remove('hidden');
+                } else {
+                    if (errorEl) errorEl.classList.add('hidden');
+                    this.state.grouping = inputVal;
+                    this.update();
+                }
+            },
+
+            validarYGenerarAgrupacion: function() {
+                const n = this.state.customNum;
+                let res = [];
+                let temp = n;
+                if (n === 5) res = [2, 3];
+                else if (n === 7) res = [2, 2, 3];
+                else if (n === 8) res = [3, 3, 2];
+                else if (n === 10) res = [3, 3, 2, 2];
+                else if (n === 11) res = [3, 3, 3, 2];
+                else {
+                    while (temp > 3) { res.push(3); temp -= 3; }
+                    if (temp > 0) res.push(temp);
+                }
+                this.state.grouping = res.join('+');
+                const groupEl = document.getElementById('metrica-grouping');
+                if (groupEl) groupEl.value = this.state.grouping;
+                const errorEl = document.getElementById('metrica-group-error');
+                if (errorEl) errorEl.classList.add('hidden');
+            },
+
+            update: function() {
+                const currentNum = this.state.mode === 'libre' ? this.state.customNum : this.state.num;
+                const denEl = document.getElementById('metrica-den');
+                if (denEl) this.state.den = parseInt(denEl.value);
+                
+                const numInput = document.getElementById('metrica-num');
+                if (numInput) {
+                    numInput.value = currentNum;
+                    if (this.state.mode === 'libre') {
+                        numInput.removeAttribute('readonly');
+                    } else {
+                        numInput.setAttribute('readonly', 'true');
+                    }
+                }
+                
+                ['simple','compuesto','libre'].forEach(m => {
+                    const btn = document.getElementById('tab-'+m);
+                    if (btn) btn.className = m===this.state.mode ? "flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all bg-white text-indigo-600 shadow-sm dark:bg-slate-700 dark:text-indigo-400" : "flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all text-slate-500 dark:text-slate-400";
+                });
+
+                const groupContainer = document.getElementById('metrica-group-container');
+                if (groupContainer) groupContainer.style.display = this.state.mode === 'libre' ? 'block' : 'none';
+
+                const isDark = document.documentElement.classList.contains('dark');
+                const darkColor = isDark ? "#f8fafc" : "#334155";
+                const figs = this.getAllFigures("#4f46e5", darkColor);
+                const allFlatFigures = [...figs.white, ...figs.dark].filter((v,i,a)=>a.findIndex(t=>(t.sub === v.sub))===i).sort((a,b)=>a.sub-b.sub);
+
+                let up = null, truePulseCount = 0;
+                
+                if(this.state.mode === 'simple') {
+                    up = figs.white.find(f => f.sub === this.state.den && f.type === 'simple');
+                    truePulseCount = currentNum;
+                    this.setText('metrica-up-label', 'Unidad de Tiempo (Pulso)');
+                } else if(this.state.mode === 'compuesto') {
+                    up = figs.white.find(f => Math.abs(f.sub - (this.state.den/3)) < 0.001);
+                    truePulseCount = currentNum / 3;
+                    this.setText('metrica-up-label', 'Unidad de Tiempo (Pulso Compuesto)');
+                } else {
+                    up = figs.white.find(f => f.sub === this.state.den && f.type === 'simple');
+                    const g = this.state.grouping.split('+').map(Number).filter(n=>!isNaN(n));
+                    truePulseCount = g.reduce((a,b)=>a+b,0) === currentNum ? g.length : currentNum;
+                    this.setText('metrica-up-label', 'Unidad de Referencia (Subdivisión)');
+                }
+
+                const totalDurationInWholeNotes = currentNum / this.state.den;
+                let uc = allFlatFigures.find(f => Math.abs(f.sub - (1 / totalDurationInWholeNotes)) < 0.001);
+                let ucCombination = [];
+                if (!uc) {
+                    let rem = totalDurationInWholeNotes;
+                    const sortedForTies = [...allFlatFigures].sort((a, b) => a.sub - b.sub);
+                    while (rem > 0.0001 && ucCombination.length < 3) {
+                        const match = sortedForTies.find(f => (1 / f.sub) <= rem + 0.0001);
+                        if (match) { ucCombination.push(match); rem -= (1 / match.sub); } else break;
+                    }
+                }
+
+                let svgHTML = up ? up.svg : '';
+                if(up && up.type === 'dotted') svgHTML += `<circle cx="21" cy="17" r="1.5" fill="#4f46e5" />`;
+                this.setHTML('metrica-svg-container', `<svg viewBox="0 0 24 24" class="w-8 h-8 drop-shadow-sm">${svgHTML}</svg>`);
+                
+                const upNameEl = document.getElementById('metrica-up-name');
+                if(upNameEl) {
+                    upNameEl.innerText = up ? up.name : '---';
+                    upNameEl.className = `text-base font-black leading-tight truncate ${isDark ? 'text-white' : 'text-slate-800'}`;
+                }
+                
+                let pulseText = '';
+                if(this.state.mode === 'libre') pulseText = `${currentNum} subdivisiones agrupadas en ${truePulseCount} pulsos asimétricos`;
+                else pulseText = `${truePulseCount} pulsos por compás`;
+                this.setText('metrica-true-pulse', pulseText);
+
+                let ucSvgHTML = '';
+                if (uc) {
+                    let s = uc.svg.replace(/#4f46e5|#334155|#f8fafc/g, '#fff');
+                    if(uc.type === 'dotted') s += `<circle cx="21" cy="17" r="1.5" fill="#fff" />`;
+                    ucSvgHTML = `<svg viewBox="0 0 24 24" class="w-8 h-8 drop-shadow-sm">${s}</svg>`;
+                    this.setText('metrica-uc-name', uc.name);
+                } else if (ucCombination.length > 0) {
+                    ucCombination.forEach((f, i) => {
+                        let s = f.svg.replace(/#4f46e5|#334155|#f8fafc/g, '#fff');
+                        if(f.type === 'dotted') s += `<circle cx="21" cy="17" r="1.5" fill="#fff" />`;
+                        ucSvgHTML += `<svg viewBox="0 0 24 24" class="w-6 h-6 drop-shadow-sm">${s}</svg>`;
+                        if(i < ucCombination.length - 1) ucSvgHTML += `<span class="text-white text-xs font-bold mx-0.5">+</span>`;
+                    });
+                    this.setText('metrica-uc-name', "Ligadura asimétrica");
+                }
+                this.setHTML('metrica-uc-svg-container', ucSvgHTML);
+
+                let html = '';
+                figs.dark.forEach(fig => {
+                    let val = (this.state.den / fig.sub) / (this.state.mode === 'compuesto' ? 3 : 1);
+                    if (this.state.mode === 'libre') val = this.state.den / fig.sub;
+                    
+                    const isBase = Math.abs(val - 1) < 0.001;
+                    
+                    let iconSvg = fig.svg;
+                    if(fig.type === 'dotted') iconSvg += `<circle cx="21" cy="17" r="1.5" fill="${isBase ? '#4f46e5' : (isDark?'#94a3b8':'#94a3b8')}" />`;
+                    
+                    if(isBase) {
+                        iconSvg = iconSvg.replace(/#334155|#f8fafc/g, '#4f46e5');
+                    } else {
+                        iconSvg = iconSvg.replace(/#334155|#f8fafc/g, isDark ? '#94a3b8' : '#94a3b8');
+                    }
+
+                    let desc = isBase ? 'Representa 1 pulso' : 'Valor relativo';
+
+                    html += `
+                    <div class="flex items-center p-4 transition-colors ${isBase ? 'bg-indigo-50/40 border-l-4 border-l-indigo-600 dark:bg-indigo-900/20' : 'bg-transparent border-l-4 border-l-transparent border-b border-b-slate-100 dark:border-b-slate-700/50'}">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-2xl border shrink-0 ${isBase ? 'bg-white border-indigo-200 shadow-sm dark:bg-slate-800 dark:border-indigo-800/50' : 'bg-transparent border-transparent'}">
+                            <svg viewBox="0 0 24 24" class="w-7 h-7 ${isBase ? 'drop-shadow-sm' : ''}">${iconSvg}</svg>
+                        </div>
+                        <div class="ml-4 flex-1 min-w-0">
+                            <h4 class="text-sm font-black leading-tight truncate ${isBase ? 'text-indigo-900 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}">${fig.name}</h4>
+                            <p class="text-[10px] font-medium mt-1 uppercase tracking-tighter truncate ${isBase ? 'text-indigo-600 dark:text-indigo-500' : 'text-slate-400 dark:text-slate-500'}">${desc}</p>
+                        </div>
+                        <div class="flex flex-col items-end shrink-0 ml-2">
+                            <div class="px-3 py-1.5 rounded-xl font-mono font-black text-sm ${isBase ? 'bg-indigo-600 text-white shadow-md dark:bg-indigo-500' : 'bg-transparent text-slate-500 dark:text-slate-400'}">
+                                ${val >= 0.01 ? val.toFixed(2) : val.toFixed(4)}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                this.setHTML('metrica-table-body', html);
+            }
+        };
+
+        // ==========================================
+        // ESCALAS MODALES APP LOGIC
+        // ==========================================
+        window.EscalasApp = {
+            scale: null, root: '', notasAudio: [], intervalosAColorear: [],
+            
+            generarModo: function() {
+                const fEl = document.getElementById('filtro-familia');
+                if(!fEl) return;
+                const fam = fEl.value;
+                const pool = fam === 'Todas' ? modosDB : modosDB.filter(m => m.familia === fam);
+                
+                if (!pool || pool.length === 0) {
+                    alert("La base de datos no contiene escalas para esta familia.");
+                    return;
+                }
+                
+                window.EscalasApp.scale = pool[Math.floor(Math.random() * pool.length)];
+                window.EscalasApp.root = raicesDisponibles[Math.floor(Math.random() * raicesDisponibles.length)];
+                
+                document.getElementById('modo-actual-titulo').innerText = `Tónica en ${window.EscalasApp.root} (Grado ${window.EscalasApp.scale.grado})`;
+                document.getElementById('modo-actual-padre').innerText = `Familia Padre: ${window.EscalasApp.scale.familia}`;
+                
+                document.getElementById('partitura-section').classList.remove('hidden');
+                document.getElementById('partitura-section').classList.add('flex');
+                document.getElementById('evaluacion-form').classList.remove('hidden');
+                
+                window.EscalasApp.intervalosAColorear = [];
+                window.EscalasApp.renderVexFlow();
+                window.EscalasApp.resetForm();
+                window.EscalasApp.buildStep1();
+            },
+
+            renderVexFlow: function() {
+                if(!window.Vex) return;
+                const VF = Vex.Flow;
+                const container = document.getElementById('staff-container');
+                if(!container) return;
+                container.innerHTML = "";
+                const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+                renderer.resize(500, 140);
+                const ctx = renderer.getContext();
+                const svg = container.querySelector('svg'); 
+                if(svg) { svg.setAttribute('viewBox', '0 0 500 140'); svg.style.width = '100%'; }
+                const stave = new VF.Stave(10, 10, 480);
+                stave.addClef("treble").setContext(ctx).draw();
+
+                let notas = [], oct = 4, prev = -1, iR = letrasBase.indexOf(window.EscalasApp.root.charAt(0));
+                
+                const rootLetter = window.EscalasApp.root.charAt(0);
+                const rootAcc = window.EscalasApp.root.slice(1);
+                let altVal = 0;
+                if(rootAcc === 'b') altVal = -1;
+                else if(rootAcc === '#') altVal = 1;
+
+                const rV = valorLetras[rootLetter] + altVal;
+                const isDark = document.documentElement.classList.contains('dark');
+                const defaultColor = isDark ? "#cbd5e1" : "#1e293b";
+
+                window.EscalasApp.scale.intervalos.forEach(intStr => {
+                    let num = parseInt(intStr.replace(/[^0-9]/g, '')), semi = semitonosMap[intStr];
+                    let iObj = (iR + num - 1) % 7, lObj = letrasBase[iObj], vBase = valorLetras[lObj];
+                    if(prev !== -1 && iObj < prev) oct++;
+                    prev = iObj;
+                    let diff = ((rV + semi) % 12) - vBase;
+                    if(diff>6) diff-=12; if(diff<-6) diff+=12;
+                    let alt = diff===1?'#':(diff===2?'##':(diff===-1?'b':(diff===-2?'bb':'')));
+                    notas.push({ vexKey: `${lObj.toLowerCase()}/${oct}`, accidental: alt, label: lObj + alt, intervaloTeorico: intStr });
+                });
+                window.EscalasApp.notasAudio = notas;
+
+                const vfNotes = notas.map(nd => {
+                    const note = new VF.StaveNote({ keys: [nd.vexKey], duration: "q" });
+                    if (nd.accidental) note.addModifier(new VF.Accidental(nd.accidental));
+                    
+                    if (window.EscalasApp.intervalosAColorear.includes(nd.intervaloTeorico)) {
+                        note.setStyle({fillStyle: "#f59e0b", strokeStyle: "#f59e0b"});
+                    } else {
+                        note.setStyle({fillStyle: defaultColor, strokeStyle: defaultColor});
+                    }
+                    return note;
+                });
+                const voice = new VF.Voice({ num_beats: 7, beat_value: 4 });
+                voice.addTickables(vfNotes);
+                new VF.Formatter().joinVoices([voice]).format([voice], 400);
+                voice.draw(ctx, stave);
+                window.EscalasApp.actualizarLabelsNotacion();
+
+                const intDiv = document.getElementById("intervalos-seleccionados"); 
+                if (intDiv) {
+                    intDiv.innerHTML = window.EscalasApp.notasAudio.map((nd, idx) => `<div id="badge-container-${idx+1}" class="flex-1 opacity-0 scale-90 transition-all flex flex-col items-center"><span id="score-int-${idx+1}" class="opus-badge mt-2">${idx===0?'1':''}</span></div>`).join('');
+                }
+                window.EscalasApp.sincronizarIntervaloScore(1);
+            },
+
+            sincronizarIntervaloScore: function(grado) {
+                const inputEl = document.getElementById(`int-${grado}`);
+                const val = inputEl ? inputEl.value : (grado === 1 ? '1' : null);
+                const score = document.getElementById(`score-int-${grado}`);
+                const badgeCont = document.getElementById(`badge-container-${grado}`);
+                if (score && badgeCont) {
+                    score.innerText = val;
+                    if (val) {
+                        badgeCont.className = "flex flex-col items-center flex-1 opacity-100 scale-100 transition-all";
+                        score.className = "opus-badge bg-emerald-50 text-emerald-600 shadow-sm border border-emerald-100 mt-2 dark:bg-emerald-900/30 dark:border-emerald-800/50 dark:text-emerald-400";
+                    } else {
+                        badgeCont.className = "flex flex-col items-center flex-1 opacity-0 scale-90 transition-all";
+                    }
+                }
+            },
+
+            setBadge: function(step, state) {
+                const badge = document.getElementById(`badge-${step}`);
+                const cont = document.getElementById(step === 1 ? `paso-1-container` : `paso-${step}`);
+                if (!badge || !cont) return;
+                
+                if(state === 'correct') {
+                    badge.className = "bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-emerald-200 transition-colors dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-400";
+                    badge.innerHTML = "✓";
+                    cont.classList.add('correct-step');
+                    cont.classList.remove('incorrect-step');
+                } else if(state === 'error') {
+                    badge.className = "bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-red-200 transition-colors dark:bg-red-900/40 dark:border-red-800 dark:text-red-400";
+                    badge.innerHTML = "✗";
+                    cont.classList.add('incorrect-step');
+                    cont.classList.remove('correct-step');
+                } else {
+                    badge.className = "bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm transition-colors dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
+                    badge.innerHTML = step;
+                    cont.classList.remove('correct-step', 'incorrect-step');
+                }
+            },
+
+            lockFrom: function(step) {
+                for(let i = step; i <= 5; i++) {
+                    const el = document.getElementById(`paso-${i}`);
+                    if (el) {
+                        el.classList.add('locked-step');
+                        window.EscalasApp.setBadge(i, 'default');
+                        if(i === 2) document.querySelectorAll('input[name="tipoEscala"]').forEach(r => r.checked = false);
+                        if(i === 3) { 
+                            const mb = document.getElementById('modo-base');
+                            if(mb) { mb.value = ""; mb.classList.remove('select-error'); }
+                            const fc = document.getElementById('formula-container');
+                            if(fc) fc.classList.add('hidden');
+                        }
+                        if(i === 4) { 
+                            const av = document.getElementById('acorde-verificacion');
+                            if(av) { av.value = ""; av.classList.remove('select-error'); }
+                        }
+                        if(i === 5) { 
+                            const nf = document.getElementById('nombre-final');
+                            if(nf) { nf.value = ""; nf.classList.remove('select-error'); }
+                        }
+                    }
+                }
+                const rp = document.getElementById('resultados-panel');
+                if (rp) rp.classList.add('hidden');
+            },
+
+            resetForm: function() {
+                for(let i = 2; i <= 7; i++) { 
+                    const el = document.getElementById(`int-${i}`); 
+                    if(el) { el.value = ""; el.classList.remove('select-error', 'select-success'); } 
+                }
+                window.EscalasApp.setBadge(1, 'default');
+                window.EscalasApp.lockFrom(2);
+                window.EscalasApp.intervalosAColorear = [];
+                const infoEnarmonia = document.getElementById('info-enarmonia-3ra');
+                if (infoEnarmonia) infoEnarmonia.classList.add('hidden');
+            },
+
+            buildStep1: function() {
+                const c = document.getElementById('intervalos-container');
+                if(!c) return;
+                c.innerHTML = `<div class="opus-input w-full p-3 text-emerald-600 font-extrabold text-center opacity-70 bg-slate-100 border-dashed border-slate-300 dark:bg-slate-800 dark:border-slate-600 dark:text-emerald-400">1<input type="hidden" id="int-1" value="1"></div>`;
+                for(let i=2; i<=7; i++) {
+                    c.innerHTML += `<select id="int-${i}" onchange="window.EscalasApp.validarPaso1(${i})" class="escala-select opus-input w-full py-3 px-1 sm:px-2 font-semibold cursor-pointer text-center sm:text-left text-xs sm:text-sm transition-colors"><option value="">${romanos[i]} grado</option>${opcionesPorGrado[i].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+                }
+            },
+
+            validarPaso1: function(grado) {
+                if (!window.EscalasApp.scale) return;
+                window.EscalasApp.sincronizarIntervaloScore(grado);
+                let todos = true, todoBien = true;
+                for (let i = 2; i <= 7; i++) {
+                    let el = document.getElementById(`int-${i}`);
+                    if (el) {
+                        el.classList.remove('select-error', 'select-success');
+                        if (!el.value) todos = false;
+                        else if (el.value !== window.EscalasApp.scale.intervalos[i-1]) { el.classList.add('select-error'); todoBien = false; }
+                    }
+                }
+                if (todos) {
+                    if (todoBien) {
+                        for(let i = 2; i <= 7; i++) {
+                            const el = document.getElementById(`int-${i}`);
+                            if(el) el.classList.add('select-success');
+                        }
+                        window.EscalasApp.setBadge(1, 'correct');
+                        const p2 = document.getElementById('paso-2');
+                        if(p2) p2.classList.remove('locked-step');
+                    } else { window.EscalasApp.setBadge(1, 'error'); window.EscalasApp.lockFrom(2); }
+                } else { window.EscalasApp.setBadge(1, 'default'); window.EscalasApp.lockFrom(2); }
+            },
+
+            validarPaso2: function() {
+                const s = document.querySelector('input[name="tipoEscala"]:checked');
+                if(!s) return;
+                
+                const infoEnarmonia = document.getElementById('info-enarmonia-3ra');
+
+                if(s.value === window.EscalasApp.scale.tipo) {
+                    window.EscalasApp.setBadge(2, 'correct');
+                    const sb = document.getElementById('modo-base');
+                    if (sb) {
+                        sb.innerHTML = '<option value="">Selecciona base...</option>';
+                        let opts = s.value === 'Mayor' ? ['Jónico','Lidio','Mixolidio'] : ['Dórico','Frigio','Eólico','Locrio'];
+                        opts.forEach(o => sb.appendChild(new Option(o, o)));
+                    }
+                    
+                    if (infoEnarmonia) {
+                        const tieneB4 = window.EscalasApp.scale.intervalos.includes('b4');
+                        if (s.value === 'Mayor' && tieneB4) {
+                            infoEnarmonia.innerHTML = `Nota común teórica: El intervalo <span class="font-black">b4</span> presente en esta escala actuará enarmónicamente como la 3ra mayor (<span class="font-black">3</span>) del modo base que seleccionarás en el siguiente paso.`;
+                            infoEnarmonia.classList.remove('hidden');
+                        } else if (s.value === 'Mayor' && window.EscalasApp.scale.intervalos.includes('3')) {
+                            infoEnarmonia.innerHTML = `Nota común teórica: La 3ra mayor (<span class="font-black">3</span>) de esta escala se mantendrá intacta como nota común con el modo base que definirás a continuación.`;
+                            infoEnarmonia.classList.remove('hidden');
+                        } else {
+                            infoEnarmonia.classList.add('hidden');
+                        }
+                    }
+
+                    const p3 = document.getElementById('paso-3');
+                    if(p3) p3.classList.remove('locked-step');
+                } else { 
+                    window.EscalasApp.setBadge(2, 'error'); 
+                    if (infoEnarmonia) infoEnarmonia.classList.add('hidden');
+                    window.EscalasApp.lockFrom(3); 
+                }
+            },
+
+            validarPaso3: function() {
+                const sb = document.getElementById('modo-base');
+                const fc = document.getElementById('formula-container');
+                if (!sb || !fc) return;
+                
+                sb.classList.remove('select-error');
+                
+                if(!sb.value) { fc.classList.add('hidden'); window.EscalasApp.lockFrom(4); return; }
+                
+                const d = formulasModosBase[sb.value];
+                fc.classList.remove('hidden');
+                
+                const tieneB4Enarmonico = window.EscalasApp.scale.intervalos.includes('b4') && d.formula.includes('3');
+
+                const htmlFormulaActual = window.EscalasApp.scale.intervalos.map((int, i) => {
+                    const esAlt = int !== d.formula[i];
+                    return `<div class="${esAlt ? 'text-pink-600 font-extrabold bg-pink-100 dark:bg-pink-900/30 dark:text-pink-400 rounded px-1' : 'text-slate-700 dark:text-slate-300 font-extrabold'} text-center">${int}</div>`;
+                }).join('');
+
+                const htmlFormulaBase = d.formula.map(int => {
+                    const esChar = d.char.includes(int);
+                    return `<div class="${esChar ? 'highlight-char' : 'text-slate-400 dark:text-slate-500'} text-center font-bold">${int}</div>`;
+                }).join('');
+
+                let notaEnarmonicaHtml = '';
+                if (tieneB4Enarmonico) {
+                    notaEnarmonicaHtml = `<div class="w-full text-center text-[11px] sm:text-xs text-purple-700 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/50 rounded p-2 mt-2 leading-tight">Nota: El <span class="font-black">b4</span> en la escala actual funciona enarmónicamente como la 3ra mayor (<span class="font-black">3</span>) del modo base.</div>`;
+                }
+
+                fc.innerHTML = `
+                    <div class="flex flex-col w-full max-w-lg mx-auto">
+                        <div class="grid grid-cols-[minmax(60px,auto)_1fr] gap-1 sm:gap-2 items-center w-full">
+                            <span class="text-slate-400 font-semibold uppercase text-[10px] sm:text-xs text-left leading-tight pr-2">${sb.value}</span>
+                            <div class="grid grid-cols-7 gap-1 sm:gap-2 items-center w-full">${htmlFormulaBase}</div>
+                        </div>
+                        <div class="border-b border-slate-200 dark:border-slate-700 my-2 w-full"></div>
+                        <div class="grid grid-cols-[minmax(60px,auto)_1fr] gap-1 sm:gap-2 items-center w-full">
+                            <span class="text-slate-500 dark:text-slate-400 font-semibold uppercase text-[10px] sm:text-xs text-left leading-tight pr-2">Actual</span>
+                            <div class="grid grid-cols-7 gap-1 sm:gap-2 items-center w-full">${htmlFormulaActual}</div>
+                        </div>
+                        ${notaEnarmonicaHtml}
+                    </div>`;
+                
+                if(window.EscalasApp.scale.base.includes(sb.value)) {
+                    window.EscalasApp.setBadge(3, 'correct');
+                    const p4 = document.getElementById('paso-4');
+                    if(p4) p4.classList.remove('locked-step');
+                } else {
+                    window.EscalasApp.setBadge(3, 'error');
+                    sb.classList.add('select-error');
+                    window.EscalasApp.lockFrom(4);
+                }
+            },
+
+            validarPaso4: function() {
+                const av = document.getElementById('acorde-verificacion');
+                if(!av) return;
+                
+                av.classList.remove('select-error');
+                if(!av.value) { window.EscalasApp.intervalosAColorear = []; window.EscalasApp.renderVexFlow(); window.EscalasApp.lockFrom(5); return; }
+                
+                const sb = document.getElementById('modo-base');
+                if(!sb) return;
+                
+                const mb = sb.value;
+                const acordeLimpio = av.value;
+                const acordeBaseReal = mapaAcordesVerificacion[mb];
+                
+                let esValido = false;
+                if (acordeLimpio === acordeBaseReal) esValido = true;
+                
+                if (acordeLimpio === 'Xmaj7' && !window.EscalasApp.scale.intervalos.includes('7')) esValido = false;
+                if (acordeLimpio === 'X7sus(b9)' && (!window.EscalasApp.scale.intervalos.includes('4') || !window.EscalasApp.scale.intervalos.includes('b2'))) esValido = false;
+                if (acordeLimpio === 'Xm7' && window.EscalasApp.scale.intervalos.includes('b5')) esValido = false;
+                if (acordeLimpio === 'Xm7(b5)' && acordeBaseReal === 'Xm7' && window.EscalasApp.scale.intervalos.includes('b5')) esValido = true;
+
+                if(esValido) {
+                    window.EscalasApp.setBadge(4, 'correct');
+                    window.EscalasApp.intervalosAColorear = intervalosDeAcordes[acordeLimpio] || [];
+                    window.EscalasApp.renderVexFlow();
+
+                    const sn = document.getElementById('nombre-final');
+                    if(sn) {
+                        sn.innerHTML = '<option value="">Selecciona la escala correcta...</option>';
+                        const escalasFiltradas = modosDB.filter(m => m.base.includes(mb));
+                        const opcionesNombre = new Set();
+                        escalasFiltradas.forEach(m => {
+                            let nombreCoherente = m.nombres.find(n => n.includes(mb));
+                            if (nombreCoherente) opcionesNombre.add(nombreCoherente);
+                            else opcionesNombre.add(m.nombres[0]);
+                        });
+                        [...opcionesNombre].sort().forEach(opt => sn.appendChild(new Option(opt, opt)));
+                    }
+                    const p5 = document.getElementById('paso-5');
+                    if(p5) p5.classList.remove('locked-step');
+                } else {
+                    window.EscalasApp.setBadge(4, 'error');
+                    av.classList.add('select-error');
+                    window.EscalasApp.intervalosAColorear = intervalosDeAcordes[acordeLimpio] || [];
+                    window.EscalasApp.renderVexFlow();
+                    window.EscalasApp.lockFrom(5);
+                }
+            },
+
+            unificarNombres: function(nombresArray) {
+                let resultados = new Set();
+                nombresArray.forEach(nombre => {
+                    let varianteGrados = nombre.replace(/(^|\s)(b|♮|#)?9(?=\s|$)/g, '$1$22').replace(/(^|\s)(b|♮|#)?11(?=\s|$)/g, '$1$24').replace(/(^|\s)(b|♮|#)?13(?=\s|$)/g, '$1$26');
+                    let varianteTensiones = nombre.replace(/(^|\s)(b|♮|#)?2(?=\s|$)/g, '$1$29').replace(/(^|\s)(b|♮|#)?4(?=\s|$)/g, '$1$211').replace(/(^|\s)(b|♮|#)?6(?=\s|$)/g, '$1$213');
+                    resultados.add(varianteGrados); resultados.add(varianteTensiones);
+                });
+                return Array.from(resultados).sort();
+            },
+
+            validarPaso5: function() {
+                const nf = document.getElementById('nombre-final');
+                if(!nf) return;
+                
+                nf.classList.remove('select-error');
+                if(!nf.value) return;
+                
+                const sb = document.getElementById('modo-base');
+                if(!sb) return;
+                const mb = sb.value;
+                
+                let nombreEsperado = window.EscalasApp.scale.nombres.find(n => n.includes(mb));
+                if (!nombreEsperado) nombreEsperado = window.EscalasApp.scale.nombres[0];
+
+                if(window.EscalasApp.scale.nombres.includes(nf.value)) {
+                    window.EscalasApp.setBadge(5, 'correct');
+                    const safeSet = (id, text) => { const el = document.getElementById(id); if(el) el.innerText = text; };
+                    
+                    safeSet('resumen-intervalos', window.EscalasApp.scale.intervalos.join(' - '));
+                    safeSet('resumen-3ra', window.EscalasApp.scale.tipo);
+                    safeSet('resumen-base', mb);
+                    
+                    const av = document.getElementById('acorde-verificacion');
+                    if(av) safeSet('resumen-acorde', av.value);
+                    
+                    safeSet('resumen-nombre', nombreEsperado);
+                    safeSet('resumen-origen', `${window.EscalasApp.scale.grado}º modo de la escala ${window.EscalasApp.scale.familia.toLowerCase()}`);
+                    
+                    let baseA = av ? av.value : '';
+                    let realA = baseA;
+                    if (window.EscalasApp.scale.intervalos.includes('bb7') && baseA === 'Xm7(b5)') realA = 'Xº7';
+                    else if (window.EscalasApp.scale.nombres[0].includes('Alterado')) realA = 'X7alt';
+                    else if (window.EscalasApp.scale.intervalos.includes('#5') && baseA === 'Xmaj7') realA = 'Xmaj7(#5)';
+                    else if (window.EscalasApp.scale.intervalos.includes('7') && baseA.includes('m7')) realA = baseA.replace('m7', 'm(maj7)');
+                    safeSet('resumen-acorde-real', realA);
+
+                    const baseF = formulasModosBase[mb].formula;
+                    let alts = [];
+                    window.EscalasApp.scale.intervalos.forEach((int, i) => {
+                        if (int !== baseF[i]) { if (['2', '3', '6', '7'].includes(int) && baseF[i].includes('b')) alts.push('♮' + int); else alts.push(int); }
+                    });
+                    safeSet('resumen-alteracion', alts.length > 0 ? alts.join(', ') : 'Ninguna');
+
+                    let alternos = window.EscalasApp.unificarNombres(window.EscalasApp.scale.nombres).filter(n => n !== nombreEsperado);
+                    const alternosEl = document.getElementById('nombres-alternos');
+                    if (alternosEl) {
+                        if (alternos.length > 0) {
+                            alternosEl.innerHTML = `Nombres alternativos:<br><span class="font-normal text-emerald-100">${alternos.join(' / ')}</span>`;
+                            alternosEl.classList.remove('hidden');
+                        } else {
+                            alternosEl.classList.add('hidden');
+                        }
+                    }
+
+                    const resPanel = document.getElementById('resultados-panel');
+                    if(resPanel) {
+                        resPanel.classList.remove('hidden');
+                        resPanel.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else {
+                    window.EscalasApp.setBadge(5, 'error');
+                    nf.classList.add('select-error');
+                }
+            },
+
+            obtenerLabelNotacion: function(labelAmericano, tipo) {
+                if (tipo === 'americano') return labelAmericano;
+                const nota = labelAmericano.charAt(0);
+                const alt = labelAmericano.substring(1);
+                return mapaLatino[nota] + alt;
+            },
+
+            actualizarLabelsNotacion: function() {
+                const toggle = document.getElementById("toggle-notas");
+                const vis = toggle ? toggle.checked : false;
+                const tn = document.getElementById("tipo-notacion");
+                const t = tn ? tn.value : 'americano';
+                const c = document.getElementById("notas-nombres");
+                const selectorCont = document.getElementById("notacion-selector-container");
+                
+                if(selectorCont) selectorCont.style.display = vis ? "block" : "none";
+                if(c) c.style.opacity = vis ? "1" : "0";
+
+                if(!window.EscalasApp.notasAudio.length || !c) return;
+                c.innerHTML = window.EscalasApp.notasAudio.map(nd => {
+                    const labelFinal = window.EscalasApp.obtenerLabelNotacion(nd.label, t);
+                    return `<div class="flex-1 text-center text-xs sm:text-sm font-extrabold ${window.EscalasApp.intervalosAColorear.includes(nd.intervaloTeorico) ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300'}">${labelFinal}</div>`;
+                }).join('');
+            },
+
+            toggleNotas: function() { window.EscalasApp.actualizarLabelsNotacion(); },
+
+            obtenerFrecuencia: function(k, a) {
+                const parts = k.split('/');
+                const l = parts[0];
+                const o = parts[1];
+                
+                const baseVal = valorLetras[l.toUpperCase()];
+                let altVal = 0;
+                if(a === 'b') altVal = -1;
+                else if(a === 'bb') altVal = -2;
+                else if(a === '#') altVal = 1;
+                else if(a === '##') altVal = 2;
+                
+                const s = baseVal + altVal;
+                return 440 * Math.pow(2, ((12 * (parseInt(o) + 1) + s) - 69) / 12);
+            },
+
+            reproducirEscala: function() {
+                if(!window.EscalasApp.notasAudio.length) return;
+                const ctx = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                if(!window.audioCtx) window.audioCtx = ctx;
+                if(ctx.state === 'suspended') ctx.resume();
+
+                let t = ctx.currentTime + 0.1;
+                const labelsDiv = document.getElementById("notas-nombres");
+                const labels = labelsDiv ? labelsDiv.children : [];
+                const svgNotes = document.querySelectorAll('#partitura-section .vf-stavenote');
+                
+                window.EscalasApp.notasAudio.forEach((n, idx) => {
+                    const o = ctx.createOscillator(), g = ctx.createGain();
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(window.EscalasApp.obtenerFrecuencia(n.vexKey, n.accidental), t);
+                    g.gain.setValueAtTime(0, t);
+                    g.gain.linearRampToValueAtTime(0.2, t+0.05);
+                    g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+                    o.connect(g); g.connect(ctx.destination);
+                    o.start(t); o.stop(t+0.5);
+
+                    const delayMs = (t - ctx.currentTime) * 1000;
+                    setTimeout(() => {
+                        if(labels[idx]) labels[idx].classList.add('playing-label');
+                        if(svgNotes[idx]) svgNotes[idx].classList.add('playing-note');
+                    }, delayMs);
+
+                    setTimeout(() => {
+                        if(labels[idx]) labels[idx].classList.remove('playing-label');
+                        if(svgNotes[idx]) svgNotes[idx].classList.remove('playing-note');
+                    }, delayMs + 300);
+
+                    t += 0.35;
+                });
+            }
+        };
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('intervalos-container');
+            if (container) {
+                for (let i = 1; i <= 7; i++) {
+                    if (i === 1) {
+                        let div = document.createElement('div');
+                        div.className = "opus-input w-full p-3 text-emerald-600 font-extrabold text-center opacity-70 bg-slate-100 border-dashed border-slate-300 dark:bg-slate-800 dark:border-slate-600 dark:text-emerald-400";
+                        div.innerText = "1";
+                        let hiddenInput = document.createElement('input'); hiddenInput.type = "hidden"; hiddenInput.id = `int-1`; hiddenInput.value = "1";
+                        let wrapper = document.createElement('div'); wrapper.appendChild(div); wrapper.appendChild(hiddenInput);
+                        container.appendChild(wrapper);
+                    } else {
+                        let select = document.createElement('select');
+                        select.id = `int-${i}`;
+                        select.className = "opus-input w-full py-3 px-1 sm:px-2 font-semibold cursor-pointer text-center sm:text-left text-xs sm:text-sm transition-colors";
+                        select.setAttribute('onchange', `window.EscalasApp.validarPaso1(${i})`);
+                        select.innerHTML = `<option value="">${romanos[i]} grado</option>` + opcionesPorGrado[i].map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                        container.appendChild(select);
+                    }
+                }
+            }
+
+            // Init Atajos Globales
+            window.addEventListener('keydown', (e) => {
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+                const key = e.key.toLowerCase();
+                const openModalEl = document.querySelector('.modal-overlay:not(.hidden)');
+                
+                if(key === 'escape' && openModalEl) {
+                    window.closeModal(openModalEl.id);
+                    return;
+                }
+                
+                if (openModalEl) return;
+                
+                if (window.currentView === 'metrica') {
+                    if(key === 'arrowup') { e.preventDefault(); window.MetricaApp.changeNum(1); }
+                    if(key === 'arrowdown') { e.preventDefault(); window.MetricaApp.changeNum(-1); }
+                    if(key === 'm') {
+                        const modes = ['simple', 'compuesto', 'libre'];
+                        let next = modes[(modes.indexOf(window.MetricaApp.state.mode) + 1) % 3];
+                        window.MetricaApp.setMode(next);
+                    }
+                } else if (window.currentView === 'escalas') {
+                    if(key === 'g') window.EscalasApp.generarModo();
+                    if(key === 'p') window.EscalasApp.reproducirEscala();
+                }
+            });
+
+            if (window.lucide) window.lucide.createIcons();
+            window.showTab('metrica');
+        });
+
+    </script>
+</body>
+</html>
