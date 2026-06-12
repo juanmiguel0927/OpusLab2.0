@@ -4,33 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpusLab 2.0</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={darkMode:'class'}</script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.2.2/abcjs-basic-min.js"></script>
-    <script>if(localStorage.theme==='dark'||(!('theme' in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark');</script>
+    
+    <script>
+        if(localStorage.theme==='dark'||(!('theme' in localStorage)&&window.matchMedia('(prefers-color-scheme: dark)').matches)){
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        
         body { font-family:'Inter',sans-serif; overflow-x:hidden; transition:background-color 0.3s,color 0.3s; }
         .mono { font-family:'JetBrains Mono',monospace; }
-        .tab-content { display:none; } .tab-content.active { display:block; animation:fadeIn 0.3s ease-in-out; }
+        
+        .tab-content { display:none; } 
+        .tab-content.active { display:block; animation:fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(5px);} to{opacity:1;transform:translateY(0);} }
+        
         .tabs-container { position:sticky; top:0; z-index:50; background:white; border-bottom:1px solid #e2e8f0; transition:all 0.3s; }
         .tabs-wrapper { display:flex; justify-content:center; overflow-x:auto; white-space:nowrap; scrollbar-width:none; padding:0 1rem; }
         .tabs-wrapper::-webkit-scrollbar { display:none; }
+        
         .nav-btn { padding:0.8rem 1rem; font-size:0.75rem; font-weight:800; color:#64748b; border-bottom:3px solid transparent; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:0.3rem; min-width:120px; flex-shrink:0; text-transform:uppercase; letter-spacing:0.05em; }
         @media(min-width:768px){.nav-btn{font-size:0.85rem;flex-direction:row;gap:0.6rem;min-width:auto;padding:1.2rem 2rem;}}
+        
+        /* Tema por Pestaña */
         .tab-metrica .icon-color{color:#4f46e5;} .tab-metrica.active-tab{color:#3730a3;border-bottom-color:#4f46e5;background:rgba(79,70,229,0.05);}
         .dark .tab-metrica.active-tab{color:#a5b4fc;border-bottom-color:#818cf8;background:rgba(99,102,241,0.15);}
+        
         .tab-escalas .icon-color{color:#2563eb;} .tab-escalas.active-tab{color:#1e3a8a;border-bottom-color:#2563eb;background:rgba(37,99,235,0.05);}
         .dark .tab-escalas.active-tab{color:#60a5fa;border-bottom-color:#3b82f6;background:rgba(37,99,235,0.15);}
+        
         .tab-armonicos .icon-color{color:#0ea5e9;} .tab-armonicos.active-tab{color:#0369a1;border-bottom-color:#0ea5e9;background:rgba(14,165,233,0.05);}
         .dark .tab-armonicos.active-tab{color:#7dd3fc;border-bottom-color:#38bdf8;background:rgba(14,165,233,0.15);}
+        
         .tab-funciones .icon-color{color:#a855f7;} .tab-funciones.active-tab{color:#7e22ce;border-bottom-color:#a855f7;background:rgba(168,85,247,0.05);}
         .dark .tab-funciones.active-tab{color:#d8b4fe;border-bottom-color:#c084fc;background:rgba(168,85,247,0.15);}
+        
         .card { background:white; border-radius:1.5rem; border:1px solid #e2e8f0; padding:1.2rem; transition:all 0.3s; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); }
         @media(min-width:768px){.card{padding:1.5rem;}}
+        
         .opus-badge { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 9999px; font-weight: 700; font-size: 0.875rem; }
         .fraction-select { appearance:none; text-align:center; text-align-last:center; padding:0 !important; background:transparent; width:100%; display:block; }
         input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
@@ -38,24 +59,31 @@
         .opus-input { background-color:#f8fafc; border:1px solid #cbd5e1; color:#334155; border-radius:0.75rem; transition:all 0.2s; padding:0.75rem 1rem; width:100%; outline:none; }
         .opus-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.15); background-color:#ffffff; }
         select.escala-select { appearance:none; background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position:right 0.75rem center; background-repeat:no-repeat; background-size:1.1em 1.1em; padding-right:2rem; }
+        
         .correct-step{border-color:#10b981 !important;background-color:#ecfdf5 !important;} 
         .incorrect-step{border-color:#ef4444 !important;background-color:#fef2f2 !important;}
         .select-error{border-color:#ef4444 !important;background-color:#fef2f2 !important;color:#b91c1c !important;} 
         .select-success{border-color:#10b981 !important;background-color:#ecfdf5 !important;color:#047857 !important;}
         .locked-step{opacity:0.4;pointer-events:none;filter:grayscale(100%);transition:all 0.3s ease;}
+        
         .highlight-char{color:#ea580c;font-weight:800;} 
         .enharmonic-link { border: 2px dashed #9333ea; color: #7e22ce; background-color: #faf5ff; border-radius: 0.25rem; }
         .dark .enharmonic-link { border-color: #c084fc; color: #d8b4fe; background-color: rgba(147, 51, 234, 0.1); }
+        
         .playing-note path{fill:#2563eb !important;stroke:#2563eb !important;transition:fill 0.05s,stroke 0.05s;} 
         .playing-label{transform:scale(1.4) translateY(-4px);color:#2563eb !important;text-shadow:0 4px 6px rgba(37,99,235,0.3);transition:all 0.1s ease-out;}
+        
         .modal-overlay{background:rgba(15,23,42,0.7);backdrop-filter:blur(5px);}
+        
         .abcjs-staff{fill:#333;} .dark .abcjs-staff{fill:#cbd5e1;} 
         .abcjs-note{fill:#1a202c;transition:fill 0.1s;} .dark .abcjs-note{fill:#f8fafc;transition:fill 0.1s;}
         .abcjs-ledger{stroke:#4a5568;} .dark .abcjs-ledger{stroke:#94a3b8;} 
         .abcjs-annotation{font-style:italic;font-weight:bold;font-family:serif;font-size:14px;fill:#1a202c;} .dark .abcjs-annotation{fill:#f8fafc;}
         .diamond-head{transform-box:fill-box;transform-origin:center;transform:scale(0.9) scaleX(0.7) rotate(45deg) !important;fill:transparent !important;stroke:#1d4ed8 !important;stroke-width:2.5px !important;} .dark .diamond-head{stroke:#60a5fa !important;}
+        
         .abc-render-wrapper{min-height:140px;display:flex;align-items:center;justify-content:center;overflow:visible;}
         .tab-btn-arm.active{border-bottom:2px solid #2563eb;color:#1d4ed8;background-color:#eff6ff;} .dark .tab-btn-arm.active{border-bottom:2px solid #60a5fa;color:#60a5fa;background-color:rgba(37,99,235,0.1);}
+        
         .node-card{transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer;border-width:2px;} .node-card:hover{transform:translateY(-5px) scale(1.05);z-index:10;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);}
         .func-inicial{border-color:#6366f1;background-color:rgba(99,102,241,0.05);} 
         .func-prolongacion{border-color:#64748b;background-color:rgba(100,116,139,0.05);} 
@@ -63,17 +91,19 @@
         .func-fuerte{border-color:#3b82f6;background-color:rgba(59,130,246,0.05);} 
         .func-superfuerte{border-color:#ef4444;background-color:rgba(239,68,68,0.05);} 
         .func-secundaria{border-color:#d946ef;background-color:rgba(217,70,239,0.05);}
+        
         .dark .func-inicial{border-color:#818cf8;background-color:rgba(99,102,241,0.1);} 
         .dark .func-prolongacion{border-color:#475569;background-color:rgba(71,85,105,0.1);} 
         .dark .func-debil{border-color:#059669;background-color:rgba(5,150,105,0.1);} 
         .dark .func-fuerte{border-color:#2563eb;background-color:rgba(37,99,235,0.1);} 
         .dark .func-superfuerte{border-color:#dc2626;background-color:rgba(220,38,38,0.1);} 
         .dark .func-secundaria{border-color:#e879f9;background-color:rgba(217,70,239,0.1);}
+        
         .blueprint-slot{border:2px dashed #cbd5e1;min-height:65px;display:flex;align-items:center;justify-content:center;border-radius:0.5rem;cursor:pointer;transition:all 0.2s;} 
         .dark .blueprint-slot{border-color:#475569;} .blueprint-slot:hover{background-color:rgba(168,85,247,0.1);border-color:#a855f7;} .blueprint-slot.filled{border-style:solid;}
-        .inv-64{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.65em;line-height:0.9;vertical-align:middle;margin-left:2px;}
-        .abcjs-note.playing-svg path, .playing-svg path { fill: #4f46e5 !important; stroke: #4f46e5 !important; transition: all 0.05s; } 
-        .dark .abcjs-note.playing-svg path, .dark .playing-svg path { fill: #818cf8 !important; stroke: #818cf8 !important; transition: all 0.05s; }
+        
+        .abcjs-note.playing-svg path, .playing-svg path, .playing-svg text, .playing-svg tspan { fill: #4f46e5 !important; stroke: #4f46e5 !important; transition: all 0.05s; } 
+        .dark .abcjs-note.playing-svg path, .dark .playing-svg path, .dark .playing-svg text, .dark .playing-svg tspan { fill: #818cf8 !important; stroke: #818cf8 !important; transition: all 0.05s; }
         
         /* Dark Mode Global */
         html.dark{color-scheme:dark;} .dark body{background-color:#020617;color:#f8fafc;} 
@@ -169,9 +199,15 @@
 
         <!-- PESTAÑA 2: ESCALAS MODALES -->
         <div id="escalas" class="tab-content space-y-6">
-            <div class="text-center mb-4">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Identificación de Escalas Modales</h2>
-                <p class="text-blue-600 dark:text-blue-400 font-bold mb-3 text-lg tracking-wide uppercase">"Cada escala tiene un ADN, apréndelo a reconocer."</p>
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Identificación Modal</h2>
+                    <p class="text-blue-600 dark:text-blue-400 font-bold text-sm tracking-wide uppercase mt-1">"Cada escala tiene un ADN, apréndelo a reconocer."</p>
+                </div>
+                <button onclick="window.openModal('modal-diccionario')" class="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors shadow-sm flex items-center gap-2">
+                    <i data-lucide="book" class="w-6 h-6"></i>
+                    <span class="hidden sm:inline font-bold text-sm">Diccionario</span>
+                </button>
             </div>
             
             <div class="card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-5 border-l-4 border-l-blue-500 dark:border-l-blue-400">
@@ -243,7 +279,7 @@
                     <div class="ml-0 sm:ml-11">
                         <select id="acorde-verificacion" class="escala-select opus-input w-full p-3.5 text-base font-semibold cursor-pointer" onchange="window.EscalasApp.validarPaso4()">
                             <option value="">Selecciona el acorde de verificación...</option>
-                            <option value="Xmaj7">Xmaj7 (Jónico - Lidio)</option><option value="Xm7">Xm7 (Dórico)</option><option value="X7">X7 (Mixolidio)</option><option value="Xm(b6)">Xm(b6) (Eólico)</option><option value="X7sus(b9)">X7sus(b9) (Frigio)</option><option value="Xm7(b5)">Xm7(b5) (Locrio)</option>
+                            <option value="Xmaj7">Xmaj7 (Jónico - Lidio)</option><option value="Xm7">Xm7 (Dórico)</option><option value="X7">X7 (Mixolidio)</option><option value="Xm(b6)">Xm(b6) (Eólico)</option><option value="X7sus4">X7sus4 (Frigio)</option><option value="Xm7(b5)">Xm7(b5) (Locrio)</option>
                         </select>
                     </div>
                 </div>
@@ -353,6 +389,10 @@
             </div>
         </div>
     </main>
+    
+    <footer class="mt-8 mb-8 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+        Desarrollado por Juan Miguel Rios Redondo
+    </footer>
 
     <!-- Modales -->
     <div id="help-metrica" class="hidden modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -362,11 +402,27 @@
             <div class="space-y-5 text-sm text-slate-700 dark:text-slate-300">
                 <p><strong>Compás Simple:</strong> Numeradores 2, 3 o 4. Subdivisión binaria.</p>
                 <p><strong>Compás Compuesto:</strong> Numeradores 6, 9 o 12. Subdivisión ternaria.</p>
-                <p><strong>Compás Amalgama:</strong> Suma de compases simples. Pulsos asimétricos.</p>
+                <p><strong>Compás Amalgama:</strong> Suma de compases simple. Pulsos asimétricos.</p>
             </div>
         </div>
     </div>
     
+    <!-- Modal Diccionario Modal -->
+    <div id="modal-diccionario" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden z-[120] p-4 sm:p-6 items-center justify-center">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col relative overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="flex-none p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 z-20">
+                <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <i data-lucide="book" class="text-blue-600 dark:text-blue-400 w-5 h-5"></i> Diccionario Modal
+                </h3>
+                <button onclick="window.closeModal('modal-diccionario')" class="p-2 rounded-xl bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-red-900/50 dark:hover:text-red-400 transition-all cursor-pointer">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="diccionario-content" class="p-4 sm:p-6 overflow-y-auto bg-white dark:bg-slate-900 flex-grow">
+            </div>
+        </div>
+    </div>
+
     <div id="modal-ayuda-diatonico" class="hidden modal-overlay fixed inset-0 z-[110] flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 relative">
             <button onclick="window.closeModal('modal-ayuda-diatonico')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -385,7 +441,7 @@
             <button onclick="window.closeModal('modal-ayuda-acordes')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
             <h3 class="text-2xl font-black mb-4 border-b pb-4"><i data-lucide="layers" class="text-blue-600 inline"></i> Acordes Base</h3>
             <div class="text-sm space-y-2">
-                <p>Xmaj7 -> Jónico y Lidio</p><p>Xm7 -> Dórico</p><p>X7 -> Mixolidio</p><p>Xm(b6) -> Eólico</p><p>X7sus(b9) -> Frigio</p><p>Xm7(b5) -> Locrio</p>
+                <p>Xmaj7 -> Jónico y Lidio</p><p>Xm7 -> Dórico</p><p>X7 -> Mixolidio</p><p>Xm(b6) -> Eólico</p><p>X7sus4 -> Frigio</p><p>Xm7(b5) -> Locrio</p>
             </div>
         </div>
     </div>
@@ -404,7 +460,7 @@
     </div>
 
     <script>
-        const dGe = id => document.getElementById(id);
+        function dGe(id) { return document.getElementById(id); }
         
         window.currentView = 'metrica';
         window.showTab = function(tId) {
@@ -430,6 +486,7 @@
         };
 
         const dbModos = [
+            // MAYOR
             { f: 'Mayor', g: 1, i: ['1','2','3','4','5','6','7'], t: 'Mayor', b: ['Jónico'], n: ['Jónico'] },
             { f: 'Mayor', g: 2, i: ['1','2','b3','4','5','6','b7'], t: 'Menor', b: ['Dórico'], n: ['Dórico'] },
             { f: 'Mayor', g: 3, i: ['1','b2','b3','4','5','b6','b7'], t: 'Menor', b: ['Frigio'], n: ['Frigio'] }, 
@@ -437,26 +494,29 @@
             { f: 'Mayor', g: 5, i: ['1','2','3','4','5','6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio'] },
             { f: 'Mayor', g: 6, i: ['1','2','b3','4','5','b6','b7'], t: 'Menor', b: ['Eólico'], n: ['Eólico'] }, 
             { f: 'Mayor', g: 7, i: ['1','b2','b3','4','b5','b6','b7'], t: 'Menor', b: ['Locrio'], n: ['Locrio'] },
-            { f: 'Menor Armónica', g: 1, i: ['1','2','b3','4','5','b6','7'], t: 'Menor', b: ['Eólico'], n: ['Menor Armónica', 'Eólico ♮7'] },
+            // MENOR ARMONICA
+            { f: 'Menor Armónica', g: 1, i: ['1','2','b3','4','5','b6','7'], t: 'Menor', b: ['Eólico'], n: ['Eólico ♮7', 'Menor Armónica'] },
             { f: 'Menor Armónica', g: 2, i: ['1','b2','b3','4','b5','6','b7'], t: 'Menor', b: ['Locrio'], n: ['Locrio ♮6', 'Locrio natural 6'] },
             { f: 'Menor Armónica', g: 3, i: ['1','2','3','4','#5','6','7'], t: 'Mayor', b: ['Jónico'], n: ['Jónico #5', 'Jónico Aumentado'] },
             { f: 'Menor Armónica', g: 4, i: ['1','2','b3','#4','5','6','b7'], t: 'Menor', b: ['Dórico'], n: ['Dórico #4'] },
-            { f: 'Menor Armónica', g: 5, i: ['1','b2','3','4','5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Frigio Dominante', 'Mixolidio b2 b6', 'Mixolidio b9 b13'] }, 
-            { f: 'Menor Armónica', g: 6, i: ['1','#2','3','#4','5','6','7'], t: 'Mayor', b: ['Lidio'], n: ['Lidio #2', 'Lidio #9'] },
-            { f: 'Menor Armónica', g: 7, i: ['1','b2','b3','b4','b5','b6','bb7'], t: 'Menor', b: ['Locrio'], n: ['Superlocrio bb7', 'Locrio b4 bb7'] },
-            { f: 'Menor Melódica', g: 1, i: ['1','2','b3','4','5','6','7'], t: 'Menor', b: ['Dórico'], n: ['Menor Melódica', 'Dórico ♮7'] },
-            { f: 'Menor Melódica', g: 2, i: ['1','b2','b3','4','5','6','b7'], t: 'Menor', b: ['Frigio'], n: ['Dórico b2', 'Frigio ♮6', 'Dórico b9'] },
-            { f: 'Menor Melódica', g: 3, i: ['1','2','3','#4','#5','6','7'], t: 'Mayor', b: ['Lidio'], n: ['Lidio Aumentado', 'Lidio #5'] },
-            { f: 'Menor Melódica', g: 4, i: ['1','2','3','#4','5','6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Lidio b7', 'Mixolidio #4'] },
-            { f: 'Menor Melódica', g: 5, i: ['1','2','3','4','5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio b13', 'Mixolidio b6'] },
-            { f: 'Menor Melódica', g: 6, i: ['1','2','b3','4','b5','b6','b7'], t: 'Menor', b: ['Locrio'], n: ['Locrio ♮2', 'Locrio ♮9', 'Locrio 2'] },
-            { f: 'Menor Melódica', g: 7, i: ['1','b2','#2','b4','b5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Superlocrio', 'Mixolidio Alterado'] },
-            { f: 'Mayor Armónica', g: 1, i: ['1','2','3','4','5','b6','7'], t: 'Mayor', b: ['Jónico'], n: ['Mayor Armónica', 'Jónico b6'] }, 
-            { f: 'Mayor Armónica', g: 2, i: ['1','2','b3','4','b5','6','b7'], t: 'Menor', b: ['Locrio'], n: ['Dórico b5', 'Locrio ♮2 ♮6'] },
-            { f: 'Mayor Armónica', g: 3, i: ['1','b2','#2','b4','5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Frigio b4', 'Mixolidio b2 #2 b6', 'Mixolidio b9 #9 b13', 'Frigio b11'] },
-            { f: 'Mayor Armónica', g: 4, i: ['1','2','b3','#4','5','6','7'], t: 'Menor', b: ['Dórico'], n: ['Lidio b3', 'Dórico #4 ♮7'] }, 
-            { f: 'Mayor Armónica', g: 5, i: ['1','b2','3','4','5','6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio b9', 'Mixolidio b2'] },
-            { f: 'Mayor Armónica', g: 6, i: ['1','#2','3','#4','#5','6','7'], t: 'Mayor', b: ['Lidio'], n: ['Lidio Aumentado #2', 'Lidio #2 #5', 'Lidio #9 #5'] },
+            { f: 'Menor Armónica', g: 5, i: ['1','b2','3','4','5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio b2 b6', 'Frigio Dominante'] }, 
+            { f: 'Menor Armónica', g: 6, i: ['1','#2','3','#4','5','6','7'], t: 'Mayor', b: ['Lidio'], n: ['Lidio #2'] },
+            { f: 'Menor Armónica', g: 7, i: ['1','b2','b3','b4','b5','b6','bb7'], t: 'Menor', b: ['Locrio'], n: ['Locrio b4 bb7', 'Superlocrio bb7'] },
+            // MENOR MELODICA
+            { f: 'Menor Melódica', g: 1, i: ['1','2','b3','4','5','6','7'], t: 'Menor', b: ['Dórico'], n: ['Dórico ♮7', 'Menor Melódica'] },
+            { f: 'Menor Melódica', g: 2, i: ['1','b2','b3','4','5','6','b7'], t: 'Menor', b: ['Frigio'], n: ['Frigio ♮6', 'Dórico b2'] },
+            { f: 'Menor Melódica', g: 3, i: ['1','2','3','#4','#5','6','7'], t: 'Mayor', b: ['Lidio'], n: ['Lidio #5', 'Lidio Aumentado'] },
+            { f: 'Menor Melódica', g: 4, i: ['1','2','3','#4','5','6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio #4', 'Lidio b7'] },
+            { f: 'Menor Melódica', g: 5, i: ['1','2','3','4','5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio b6'] },
+            { f: 'Menor Melódica', g: 6, i: ['1','2','b3','4','b5','b6','b7'], t: 'Menor', b: ['Locrio'], n: ['Locrio ♮2', 'Locrio 2'] },
+            { f: 'Menor Melódica', g: 7, i: ['1','b2','#2','b4','b5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio Alterado', 'Superlocrio'] },
+            // MAYOR ARMONICA
+            { f: 'Mayor Armónica', g: 1, i: ['1','2','3','4','5','b6','7'], t: 'Mayor', b: ['Jónico'], n: ['Jónico b6', 'Mayor Armónica'] }, 
+            { f: 'Mayor Armónica', g: 2, i: ['1','2','b3','4','b5','6','b7'], t: 'Menor', b: ['Locrio'], n: ['Locrio ♮2 ♮6', 'Dórico b5'] },
+            { f: 'Mayor Armónica', g: 3, i: ['1','b2','#2','b4','5','b6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixolidio b2 #2 b6', 'Frigio b4'] },
+            { f: 'Mayor Armónica', g: 4, i: ['1','2','b3','#4','5','6','7'], t: 'Menor', b: ['Dórico'], n: ['Dor #4 ♮7', 'Lidio b3'] }, 
+            { f: 'Mayor Armónica', g: 5, i: ['1','b2','3','4','5','6','b7'], t: 'Mayor', b: ['Mixolidio'], n: ['Mixo b2', 'Mixolidio b9'] },
+            { f: 'Mayor Armónica', g: 6, i: ['1','#2','3','#4','#5','6','7'], t: 'Mayor', b: ['Lidio'], n: ['Lidio #2 #5', 'Lidio Aumentado #2'] },
             { f: 'Mayor Armónica', g: 7, i: ['1','b2','b3','4','b5','b6','bb7'], t: 'Menor', b: ['Locrio'], n: ['Locrio bb7'] }
         ];
 
@@ -466,9 +526,10 @@
             'Mixolidio': { f: ['1', '2', '3', '4', '5', '6', 'b7'], c: ['b7', '4'] }, 'Eólico': { f: ['1', '2', 'b3', '4', '5', 'b6', 'b7'], c: ['b6', '2'] },
             'Locrio': { f: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'], c: ['b5', 'b2'] }
         };
-        const mapAcordBase = { 'Jónico': 'Xmaj7', 'Dórico': 'Xm7', 'Frigio': 'X7sus(b9)', 'Lidio': 'Xmaj7', 'Mixolidio': 'X7', 'Eólico': 'Xm(b6)', 'Locrio': 'Xm7(b5)' };
-        const intAcordes = { 'Xmaj7': ['1','3','5','7'], 'Xm7': ['1','b3','5','b7'], 'X7': ['1','3','5','b7'], 'Xm(b6)': ['1','b3','5','b6'], 'X7sus(b9)': ['1','4','5','b7','b2'], 'Xm7(b5)': ['1','b3','b5','b7'] };
+        const mapAcordBase = { 'Jónico': 'Xmaj7', 'Dórico': 'Xm7', 'Frigio': 'X7sus4', 'Lidio': 'Xmaj7', 'Mixolidio': 'X7', 'Eólico': 'Xm(b6)', 'Locrio': 'Xm7(b5)' };
+        const intAcordes = { 'Xmaj7': ['1','3','5','7'], 'Xm7': ['1','b3','5','b7'], 'X7': ['1','3','5','b7'], 'Xm(b6)': ['1','b3','5','b6'], 'X7sus4': ['1','4','5','b7'], 'Xm7(b5)': ['1','b3','b5','b7'] };
         const optGrd = { 1: ['1'], 2: ['b2','2','#2'], 3: ['b3','3','#2'], 4: ['b4','4','#4'], 5: ['b5','5','#5'], 6: ['b6','6'], 7: ['bb7','b7','7'] };
+        
         const raicesDisp = ['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'];
         const semitonosMap = { '1':0, 'b2':1, '2':2, '#2':3, 'b3':3, '3':4, 'b4':4, '4':5, '#4':6, 'b5':6, '5':7, '#5':8, 'b6':8, '6':9, 'bb7':9, 'b7':10, '7':11 };
         const letrasBase = ['C', 'D', 'E', 'F', 'G', 'A', 'B']; const valLetras = { 'C':0, 'D':2, 'E':4, 'F':5, 'G':7, 'A':9, 'B':11 };
@@ -555,7 +616,7 @@
                 const pS = dGe('partitura-section'); if(pS) { pS.classList.remove('hidden'); pS.classList.add('flex'); }
                 const eF = dGe('evaluacion-form'); if(eF) eF.classList.remove('hidden');
                 for(let i=2;i<=7;i++){const e=dGe(`int-${i}`);if(e){e.value="";e.classList.remove('select-error','select-success');}}
-                this.sB(1,'default'); this.lF(2); this.iC=[]; 
+                this.setStepStatus(1,'default'); this.lockFromStep(2); this.iC=[]; 
                 const ie3 = dGe('info-enarmonia-3ra'); if(ie3) ie3.classList.add('hidden');
                 const p5 = dGe('pregunta-paso-5'); if(p5) p5.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";
                 this.renderVexFlow(); this.buildStep1();
@@ -564,9 +625,11 @@
                 if(!window.Vex) return; const VF = Vex.Flow; const c = dGe('staff-container'); if(!c) return; c.innerHTML = "";
                 const ren = new VF.Renderer(c, VF.Renderer.Backends.SVG); ren.resize(500, 140); const ctx = ren.getContext(); const svg = c.querySelector('svg'); 
                 if(svg){svg.setAttribute('viewBox', '0 0 500 140'); svg.style.width='100%';}
-                const st = new VF.Stave(10, 10, 480); st.addClef("treble").setContext(ctx).draw();
+                const st = new VF.Stave(10, 10, 480); st.addClef("treble").setContext(ctx);
+                const isD = document.documentElement.classList.contains('dark'); const dC = isD?"#cbd5e1":"#1e293b";
+                ctx.setFillStyle(dC); ctx.setStrokeStyle(dC); st.draw();
                 let n = [], oct = 4, pI = -1, iR = letrasBase.indexOf(this.r.charAt(0)); const rL = this.r.charAt(0); const rA = this.r.slice(1);
-                let aV = 0; if(rA==='b')aV=-1;else if(rA==='#')aV=1; const rV = valLetras[rL] + aV; const isD = document.documentElement.classList.contains('dark'); const dC = isD?"#cbd5e1":"#1e293b";
+                let aV = 0; if(rA==='b')aV=-1;else if(rA==='#')aV=1; const rV = valLetras[rL] + aV; 
                 this.sc.i.forEach(iS => {
                     let nm = parseInt(iS.replace(/[^0-9]/g, '')), sm = semitonosMap[iS]; let iO = (iR+nm-1)%7, lO = letrasBase[iO], vB = valLetras[lO];
                     if(pI!==-1&&iO<pI)oct++; pI=iO; let d = ((rV+sm)%12)-vB; if(d>6)d-=12; if(d<-6)d+=12;
@@ -579,24 +642,24 @@
                     return note;
                 });
                 const voice = new VF.Voice({ num_beats: 7, beat_value: 4 }); voice.addTickables(vfn); new VF.Formatter().joinVoices([voice]).format([voice], 400); voice.draw(ctx, st);
-                this.tN(); const iD = dGe("intervalos-seleccionados"); 
+                this.actualizarLabelsNotacion(); const iD = dGe("intervalos-seleccionados"); 
                 if (iD) iD.innerHTML = this.nA.map((nd, idx) => `<div id="badge-container-${idx+1}" class="flex-1 opacity-0 scale-90 transition-all flex flex-col items-center"><span id="score-int-${idx+1}" class="opus-badge bg-blue-50 text-blue-600 mt-2">${idx===0?'1':''}</span></div>`).join('');
-                this.sIS(1);
+                this.syncIntervalScore(1);
             },
-            sIS: function(gr) {
+            syncIntervalScore: function(gr) {
                 const ie = dGe(`int-${gr}`); const v = ie ? ie.value : (gr===1?'1':null);
                 const s = dGe(`score-int-${gr}`); const bc = dGe(`badge-container-${gr}`);
                 if(s&&bc){s.innerText=v;if(v){bc.className="flex flex-col items-center flex-1 opacity-100 scale-100 transition-all";s.className="opus-badge bg-blue-50 text-blue-600 shadow-sm border border-blue-100 mt-2";}else{bc.className="flex flex-col items-center flex-1 opacity-0 scale-90 transition-all";}}
             },
-            sB: function(st, stt) {
+            setStepStatus: function(st, stt) {
                 const b = dGe(`badge-${st}`); const c = dGe(st===1?`paso-1-container`:`paso-${st}`); if(!b||!c)return;
                 if(stt==='correct'){b.className="bg-[#dcfce7] text-[#166534] w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800";b.innerHTML=`<i data-lucide="check" class="w-5 h-5"></i>`;if(window.lucide)lucide.createIcons();c.classList.add('correct-step');c.classList.remove('incorrect-step');}else if(stt==='error'){b.className="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800";b.innerHTML="✗";c.classList.add('incorrect-step');c.classList.remove('correct-step');}else{b.className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm dark:bg-blue-900/50 dark:text-blue-400";b.innerHTML=st;c.classList.remove('correct-step','incorrect-step');}
             },
-            lF: function(st) {
+            lockFromStep: function(st) {
                 for(let i=st;i<=5;i++){
                     const e=dGe(`paso-${i}`);
                     if(e){
-                        e.classList.add('locked-step');this.sB(i,'default');
+                        e.classList.add('locked-step');this.setStepStatus(i,'default');
                         if(i===2)document.querySelectorAll('input[name="tipoEscala"]').forEach(r=>r.checked=false);
                         if(i===3){const mb=dGe('modo-base');if(mb){mb.value="";mb.classList.remove('select-error');}dGe('formula-container')?.classList.add('hidden');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";}
                         if(i===4){const av=dGe('acorde-verificacion');if(av){av.value="";av.classList.remove('select-error');}}
@@ -606,7 +669,7 @@
             },
             resetForm: function() {
                 for(let i=2;i<=7;i++){const e=dGe(`int-${i}`);if(e){e.value="";e.classList.remove('select-error','select-success');}}
-                this.sB(1,'default');this.lF(2);this.iC=[];const ie3=dGe('info-enarmonia-3ra');if(ie3)ie3.classList.add('hidden');
+                this.setStepStatus(1,'default');this.lockFromStep(2);this.iC=[];const ie3=dGe('info-enarmonia-3ra');if(ie3)ie3.classList.add('hidden');
             },
             buildStep1: function() {
                 const c=dGe('intervalos-container');if(!c)return;
@@ -615,40 +678,47 @@
                 c.innerHTML = html;
             },
             validarPaso1: function(gr) {
-                if(!this.sc)return;this.sIS(gr);let tod=true,tb=true;
+                if(!this.sc)return;
+                this.syncIntervalScore(gr);
+                let tod=true,tb=true;
                 for(let i=2;i<=7;i++){
                     let e=dGe(`int-${i}`);
                     if(e){
                         e.classList.remove('select-error','select-success');
-                        if(!e.value) tod=false;
+                        if(!e.value) { tod=false; }
                         else if(e.value!==this.sc.i[i-1]){ e.classList.add('select-error'); tb=false; }
                         else { e.classList.add('select-success'); }
                     }
                 }
-                if(tod){if(tb){this.sB(1,'correct');const p2=dGe('paso-2');if(p2)p2.classList.remove('locked-step');}else{this.sB(1,'error');this.lF(2);}}else{this.sB(1,'default');this.lF(2);}
+                if(tod){
+                    if(tb){this.setStepStatus(1,'correct');const p2=dGe('paso-2');if(p2)p2.classList.remove('locked-step');}
+                    else{this.setStepStatus(1,'error');this.lockFromStep(2);}
+                }else{
+                    this.setStepStatus(1,'default');this.lockFromStep(2);
+                }
             },
             validarPaso2: function() {
                 const s=document.querySelector('input[name="tipoEscala"]:checked');if(!s)return;const ie=dGe('info-enarmonia-3ra');
                 if(s.value===this.sc.t){
-                    this.sB(2,'correct');const sb=dGe('modo-base');
+                    this.setStepStatus(2,'correct');const sb=dGe('modo-base');
                     if(sb){sb.innerHTML='<option value="">Selecciona base...</option>';let op=s.value==='Mayor'?['Jónico','Lidio','Mixolidio']:['Dórico','Frigio','Eólico','Locrio'];op.forEach(o=>sb.appendChild(new Option(o,o)));}
                     if(ie){const hb4=this.sc.i.includes('b4');if(s.value==='Mayor'&&hb4){ie.innerHTML=`Nota común teórica: El intervalo <span class="font-black">b4</span> actuará enarmónicamente como <span class="font-black">3</span>.`;ie.classList.remove('hidden');}else if(s.value==='Mayor'&&this.sc.i.includes('3')){ie.innerHTML=`Nota común teórica: La <span class="font-black">3</span> se mantendrá intacta.`;ie.classList.remove('hidden');}else{ie.classList.add('hidden');}}
                     const p3=dGe('paso-3');if(p3)p3.classList.remove('locked-step');
-                }else{this.sB(2,'error');if(ie)ie.classList.add('hidden');this.lF(3);}
+                }else{this.setStepStatus(2,'error');if(ie)ie.classList.add('hidden');this.lockFromStep(3);}
             },
             validarPaso3: function() {
                 const sb=dGe('modo-base');const fc=dGe('formula-container');if(!sb||!fc)return;sb.classList.remove('select-error');
-                if(!sb.value){fc.classList.add('hidden');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lF(4);return;}
+                if(!sb.value){fc.classList.add('hidden');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lockFromStep(4);return;}
                 const d=formModBase[sb.value];fc.classList.remove('hidden');const hb4e=this.sc.i.includes('b4')&&d.f.includes('3');
                 const hFA=this.sc.i.map((int,i)=>{const ea=int!==d.f[i];let cl=ea?'text-pink-600 font-extrabold bg-pink-100 dark:bg-pink-900/30 dark:text-pink-400 rounded px-1':'text-slate-700 dark:text-slate-300 font-extrabold';if(hb4e&&int==='b4')cl+=' enharmonic-link';return `<div class="${cl} text-center">${int}</div>`;}).join('');
                 const hFB=d.f.map(int=>{const ec=d.c.includes(int);let cl=ec?'highlight-char':'text-slate-400 dark:text-slate-500';if(hb4e&&int==='3')cl+=' enharmonic-link';return `<div class="${cl} text-center font-bold">${int}</div>`;}).join('');
                 let ne='';if(hb4e)ne=`<div class="w-full text-center text-[11px] sm:text-xs text-purple-700 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/50 rounded p-2 mt-2 leading-tight">Nota: El <span class="font-black">b4</span> funciona como <span class="font-black">3</span>.</div>`;
                 fc.innerHTML=`<div class="flex flex-col w-full max-w-lg mx-auto"><div class="grid grid-cols-[minmax(60px,auto)_1fr] gap-1 sm:gap-2 items-center w-full"><span class="text-slate-400 font-semibold uppercase text-[10px] sm:text-xs text-left leading-tight pr-2">${sb.value}</span><div class="grid grid-cols-7 gap-1 sm:gap-2 items-center w-full">${hFB}</div></div><div class="border-b border-slate-200 dark:border-slate-700 my-2 w-full"></div><div class="grid grid-cols-[minmax(60px,auto)_1fr] gap-1 sm:gap-2 items-center w-full"><span class="text-slate-500 dark:text-slate-400 font-semibold uppercase text-[10px] sm:text-xs text-left leading-tight pr-2">Actual</span><div class="grid grid-cols-7 gap-1 sm:gap-2 items-center w-full">${hFA}</div></div>${ne}</div>`;
-                if(this.sc.b.includes(sb.value)){this.sB(3,'correct');const p=dGe('pregunta-paso-5');if(p)p.innerHTML=`¿Qué diferencias tiene la escala actual con el modo diatónico base <strong>${sb.value}</strong> para definir su nombre?`;const p4=dGe('paso-4');if(p4)p4.classList.remove('locked-step');}else{this.sB(3,'error');sb.classList.add('select-error');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lF(4);}
+                if(this.sc.b.includes(sb.value)){this.setStepStatus(3,'correct');const p=dGe('pregunta-paso-5');if(p)p.innerHTML=`¿Qué diferencias tiene la escala actual con el modo diatónico base <strong>${sb.value}</strong> para definir su nombre?`;const p4=dGe('paso-4');if(p4)p4.classList.remove('locked-step');}else{this.setStepStatus(3,'error');sb.classList.add('select-error');const p=dGe('pregunta-paso-5');if(p)p.innerText="¿Qué diferencias tiene la escala actual con el modo diatónico base para definir su nombre?";this.lockFromStep(4);}
             },
             validarPaso4: function() {
                 const av=dGe('acorde-verificacion');if(!av)return;av.classList.remove('select-error');
-                if(!av.value){this.iC=[];this.renderVexFlow();this.lF(5);return;}
+                if(!av.value){this.iC=[];this.renderVexFlow();this.lockFromStep(5);return;}
                 const sb=dGe('modo-base');if(!sb)return;const mb=sb.value;const aL=av.value.split(' (')[0];const aBR=mapAcordBase[mb];
                 let eV=false;if(aL===aBR)eV=true;
                 if(aL==='Xmaj7'&&!this.sc.i.includes('7'))eV=false;
@@ -656,21 +726,33 @@
                 if(aL==='Xm7'&&this.sc.i.includes('b5'))eV=false;
                 if(aL==='Xm7(b5)'&&aBR==='Xm7'&&this.sc.i.includes('b5'))eV=true;
                 if(eV){
-                    this.sB(4,'correct');this.iC=intAcordes[aL]||[];this.renderVexFlow();const sn=dGe('nombre-final');
+                    this.setStepStatus(4,'correct');this.iC=intAcordes[aL]||[];this.renderVexFlow();const sn=dGe('nombre-final');
                     if(sn){
                         sn.innerHTML='<option value="">Selecciona la escala correcta...</option>';const oN=new Set();
                         dbModos.filter(m=>m.b.includes(mb)).forEach(m=>{let n=m.n.find(nx=>nx.includes(mb));if(n)oN.add(n);else oN.add(m.n[0]);});
                         [...oN].sort().forEach(op=>sn.appendChild(new Option(op,op)));
                     }
                     const p5=dGe('paso-5');if(p5)p5.classList.remove('locked-step');
-                }else{this.sB(4,'error');av.classList.add('select-error');this.iC=intAcordes[aL]||[];this.renderVexFlow();this.lF(5);}
+                }else{this.setStepStatus(4,'error');av.classList.add('select-error');this.iC=intAcordes[aL]||[];this.renderVexFlow();this.lockFromStep(5);}
             },
-            uN: function(nA) { 
+            renderDiccionario: function() {
+                const dc=dGe('diccionario-content');if(!dc)return;
+                const fams=['Mayor','Menor Armónica','Menor Melódica','Mayor Armónica'];let h='';
+                fams.forEach(fam=>{
+                    h+=`<h4 class="font-black text-slate-800 dark:text-slate-200 uppercase mb-4 mt-6 first:mt-0 text-sm tracking-wider">Sistema ${fam}</h4><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">`;
+                    dbModos.filter(m=>m.f===fam).forEach((m,idx)=>{
+                        let gId=dbModos.indexOf(m)+1;
+                        let iH=m.i.map(int=>`<div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[9px] sm:text-[10px] font-bold border border-blue-100 dark:border-slate-700">${int}</div>`).join('');
+                        h+=`<div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-3 hover:border-blue-300 transition-colors"><div class="flex justify-between items-center"><span class="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm">${m.n[0]}</span><span class="text-[8px] font-black text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">ID #${gId.toString().padStart(2,'0')}</span></div><div class="flex gap-1 justify-between">${iH}</div></div>`;
+                    }); h+=`</div>`;
+                }); dc.innerHTML=h;
+            },
+            unificarNombres: function(nA) { 
                 let r=new Set();
                 nA.forEach(nx=>{
                     r.add(nx);
-                    let v1=nx.replace(/(b|♮|#)?9/g,'$12').replace(/(b|♮|#)?11/g,'$14').replace(/(b|♮|#)?13/g,'$16');
-                    let v2=nx.replace(/(b|♮|#)?2/g,'$19').replace(/(b|♮|#)?4/g,'$111').replace(/(b|♮|#)?6/g,'$113');
+                    let v1=nx.replace(/([b♮#])?9/g,'$12').replace(/([b♮#])?11/g,'$14').replace(/([b♮#])?13/g,'$16');
+                    let v2=nx.replace(/([b♮#])?2/g,'$19').replace(/([b♮#])?4/g,'$111').replace(/([b♮#])?6/g,'$113');
                     r.add(v1);r.add(v2);
                 });
                 return Array.from(r).sort(); 
@@ -679,32 +761,32 @@
                 const nf=dGe('nombre-final');if(!nf)return;nf.classList.remove('select-error');if(!nf.value){const rp=dGe('resultados-panel');if(rp)rp.classList.add('hidden');return;}
                 const sb=dGe('modo-base');if(!sb)return;const mb=sb.value;let nE=this.sc.n.find(n=>n.includes(mb));if(!nE)nE=this.sc.n[0];
                 if(this.sc.n.includes(nf.value)){
-                    this.sB(5,'correct');const sS=(id,t)=>{const e=dGe(id);if(e)e.innerText=t;};
+                    this.setStepStatus(5,'correct');const sS=(id,t)=>{const e=dGe(id);if(e)e.innerText=t;};
                     sS('resumen-intervalos',this.sc.i.join(' - '));sS('resumen-3ra',this.sc.t);sS('resumen-base',mb);const av=dGe('acorde-verificacion');if(av)sS('resumen-acorde',av.value.split(' (')[0]);
                     let pfN = this.sc.n[0]; sS('resumen-nombre',pfN);sS('resumen-origen',`${this.sc.g}º modo de la escala ${this.sc.f.toLowerCase()}`);
                     let bA=av?av.value.split(' (')[0]:'';let rA=bA;
                     if(this.sc.i.includes('bb7')&&bA==='Xm7(b5)')rA='Xº7';else if(this.sc.n[0].includes('Alterado'))rA='X7alt';else if(this.sc.i.includes('#5')&&bA==='Xmaj7')rA='Xmaj7(#5)';else if(this.sc.i.includes('7')&&bA.includes('m7'))rA=bA.replace('m7','m(maj7)');
                     sS('resumen-acorde-real',rA);const bF=formModBase[mb].f;let a=[];this.sc.i.forEach((int,i)=>{if(int!==bF[i]){if(['2','3','6','7'].includes(int)&&bF[i].includes('b'))a.push('♮'+int);else a.push(int);}});sS('resumen-alteracion',a.length>0?a.join(', '):'Ninguna');
                     
-                    let aP=this.sc.n.slice(1); let aG=this.uN(this.sc.n).filter(x=>x!==pfN&&!aP.includes(x)); let tA=[...new Set([...aP,...aG])];
+                    let aP=this.sc.n.slice(1); let aG=this.unificarNombres(this.sc.n).filter(x=>x!==pfN&&!aP.includes(x)); let tA=[...new Set([...aP,...aG])];
                     const ae=dGe('nombres-alternos');const aec=dGe('nombres-alternos-container');
                     if(ae&&aec){if(tA.length>0){ae.innerHTML=`Nombres alternativos y de tensión armónica:<br><span class="font-normal text-blue-100">${tA.join(' / ')}</span>`;aec.classList.remove('hidden');}else aec.classList.add('hidden');}
                     const rp=dGe('resultados-panel');if(rp){rp.classList.remove('hidden');rp.scrollIntoView({behavior:'smooth'});}
-                }else{this.sB(5,'error');nf.classList.add('select-error');}
+                }else{this.setStepStatus(5,'error');nf.classList.add('select-error');}
             },
-            oL: function(lA, t) { if(t==='americano')return lA;const nt=lA.charAt(0);const al=lA.substring(1);return mapaLatino[nt]+al; },
-            tN: function() {
-                const tg=dGe("toggle-notas");const vis=tg?tg.checked:false;const tn=dGe("tipo-notacion");const t=tn?tn.value:'americano';
+            obtenerLabelNotacion: function(lA, t) { if(t==='americano')return lA;const nt=lA.charAt(0);const al=lA.substring(1);return mapaLatino[nt]+al; },
+            actualizarLabelsNotacion: function() {
+                const toggle=dGe("toggle-notas");const vis=toggle?toggle.checked:false;const tn=dGe("tipo-notacion");const t=tn?tn.value:'americano';
                 const c=dGe("notas-nombres");const sc=dGe("notacion-selector-container");
                 if(sc)sc.style.display=vis?"block":"none";if(c)c.style.opacity=vis?"1":"0";if(!this.nA.length||!c)return;
-                c.innerHTML=this.nA.map(nd=>{const lf=this.oL(nd.lbl,t);return `<div class="flex-1 text-center text-xs sm:text-sm font-extrabold ${this.iC.includes(nd.it)?'text-blue-500':'text-slate-700 dark:text-slate-300'}">${lf}</div>`;}).join('');
+                c.innerHTML=this.nA.map(nd=>{const lf=this.obtenerLabelNotacion(nd.lbl,t);return `<div class="flex-1 text-center text-xs sm:text-sm font-extrabold ${this.iC.includes(nd.it)?'text-blue-500':'text-slate-700 dark:text-slate-300'}">${lf}</div>`;}).join('');
             },
-            toggleNotas: function() { this.tN(); },
-            oF: function(k, a) { const p=k.split('/');const r=valLetras[p[0].toUpperCase()]+(a==='b'?-1:(a==='bb'?-2:(a==='#'?1:(a==='##'?2:0))));return 440*Math.pow(2,((12*(parseInt(p[1])+1)+r)-69)/12); },
+            toggleNotas: function() { this.actualizarLabelsNotacion(); },
+            obtenerFrecuencia: function(k, a) { const p=k.split('/');const r=valLetras[p[0].toUpperCase()]+(a==='b'?-1:(a==='bb'?-2:(a==='#'?1:(a==='##'?2:0))));return 440*Math.pow(2,((12*(parseInt(p[1])+1)+r)-69)/12); },
             reproducirEscala: function() {
                 if(!this.nA.length)return;const ctx=window.audioCtx||new(window.AudioContext||window.webkitAudioContext)();if(!window.audioCtx)window.audioCtx=ctx;if(ctx.state==='suspended')ctx.resume();
                 let t=ctx.currentTime+0.1;const ld=dGe("notas-nombres");const lbs=ld?ld.children:[];const sgs=document.querySelectorAll('#partitura-section .vf-stavenote');
-                this.nA.forEach((n,idx)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(this.oF(n.vk,n.acc),t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+0.5);const dMs=(t-ctx.currentTime)*1000;setTimeout(()=>{if(lbs[idx])lbs[idx].classList.add('playing-label');if(sgs[idx])sgs[idx].classList.add('playing-note');},dMs);setTimeout(()=>{if(lbs[idx])lbs[idx].classList.remove('playing-label');if(sgs[idx])sgs[idx].classList.remove('playing-note');},dMs+300);t+=0.35;});
+                this.nA.forEach((n,idx)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='triangle';o.frequency.setValueAtTime(this.obtenerFrecuencia(n.vk,n.acc),t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+0.5);const dMs=(t-ctx.currentTime)*1000;setTimeout(()=>{if(lbs[idx])lbs[idx].classList.add('playing-label');if(sgs[idx])sgs[idx].classList.add('playing-note');},dMs);setTimeout(()=>{if(lbs[idx])lbs[idx].classList.remove('playing-label');if(sgs[idx])sgs[idx].classList.remove('playing-note');},dMs+300);t+=0.35;});
             }
         };
 
@@ -723,22 +805,22 @@
                 let displayNotes = [...data.nt]; if(sortMode==='acoustic')displayNotes.sort((a,b)=>a.p===b.p?a.f-b.f:a.p-b.p);else displayNotes.sort((a,b)=>a.f-b.f);
                 const bS = this.baseHzOffsets[stringNum]; const isD = document.documentElement.classList.contains('dark');
                 displayNotes.forEach((node, i)=>{
-                    const isH=node.f!==0; const hz=440*Math.pow(2,(bS+node.p)/12); const card=document.createElement('div'); card.className='bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col h-full relative hover:shadow-md transition-shadow';
+                    const isH=node.f!==0; const hz=440*Math.pow(2,(bS+node.p)/12); const cardElement=document.createElement('div'); cardElement.className='bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col h-full relative hover:shadow-md transition-shadow';
                     const playBtn=`<button onclick="window.ArmonicosApp.playTone(${hz})" class="absolute top-4 right-4 bg-slate-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 p-2.5 rounded-full z-10"><i data-lucide="play" class="w-4 h-4 fill-current"></i></button>`;
-                    if(!isH){card.innerHTML=`${playBtn}<div class="text-xl font-black mb-1 w-3/4">${node.t}</div><div class="text-[10px] font-mono bg-slate-100 dark:bg-slate-900 inline-block px-2 py-1 rounded-md text-slate-500 mb-3">${node.i}</div><div class="abc-render-wrapper w-full mt-4"><div id="score-nat-${i}-lit" class="w-full"></div></div><div class="mt-auto text-xs font-bold p-3 bg-slate-50 dark:bg-slate-900 rounded-xl mt-4">Acústica: ${hz.toFixed(1)} Hz (${node.pt})</div>`;container.appendChild(card);if(window.ABCJS)ABCJS.renderAbc(`score-nat-${i}-lit`,`${this.abcPrefix}[${node.a}]`,{responsive:"resize",staffwidth:250,foregroundColor:isD?"#f8fafc":"#1a202c"});if(window.lucide)lucide.createIcons();return;}
+                    if(!isH){cardElement.innerHTML=`${playBtn}<div class="text-xl font-black mb-1 w-3/4">${node.t}</div><div class="text-[10px] font-mono bg-slate-100 dark:bg-slate-900 inline-block px-2 py-1 rounded-md text-slate-500 mb-3">${node.i}</div><div class="abc-render-wrapper w-full mt-4"><div id="score-nat-${i}-lit" class="w-full"></div></div><div class="mt-auto text-xs font-bold p-3 bg-slate-50 dark:bg-slate-900 rounded-xl mt-4">Acústica: ${hz.toFixed(1)} Hz (${node.pt})</div>`;container.appendChild(cardElement);if(window.ABCJS)ABCJS.renderAbc(`score-nat-${i}-lit`,`${this.abcPrefix}[${node.a}]`,{responsive:"resize",staffwidth:250,foregroundColor:isD?"#f8fafc":"#1a202c"});if(window.lucide)lucide.createIcons();return;}
                     let mb=""; if(node.c&&node.c!=="+2")mb=`<div class="mt-2 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-1.5 rounded-lg border border-orange-200 w-full text-center">⚠ Microtonal: ${node.c}</div>`;
-                    card.innerHTML=`${playBtn}<div class="text-xl font-black text-indigo-700 dark:text-indigo-400 mb-1">${node.t}</div><div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg inline-block mb-3 border border-indigo-100">Objetivo: ${data.s} ${node.nd.map(x=>x.f).join(' o ')}</div><div class="text-[11px] font-mono bg-slate-50 dark:bg-slate-900 px-3 py-2.5 rounded-xl mb-2 w-full"><div class="mb-1 text-slate-500 font-bold text-[9px] uppercase tracking-widest border-b border-slate-200 pb-1">${node.i}</div><div class="text-rose-600 mt-2">▶ Acústica: <strong>${node.pt} (${hz.toFixed(1)}Hz)</strong></div><div class="text-indigo-600 mt-0.5">▶ Escritura: <strong>${node.wp}</strong></div></div><div class="text-[10px] p-2.5 bg-amber-50 rounded-xl text-slate-600"><strong>Bio:</strong> ${node.b}</div>${mb}<div class="grid grid-cols-1 gap-3 flex-grow mt-4"><div class="border border-rose-100 bg-rose-50/50 rounded-xl p-3 relative flex flex-col justify-between min-h-[140px]"><div class="text-[9px] uppercase tracking-widest text-rose-600 font-bold absolute top-3 left-3 z-10">Tono Resultante</div><div class="abc-render-wrapper w-full flex-grow mt-4"><div id="score-nat-${i}-th" class="w-full"></div></div></div><div class="border border-indigo-100 bg-indigo-50/40 rounded-xl p-3 relative flex flex-col justify-between min-h-[140px]"><div class="text-[9px] uppercase tracking-widest text-indigo-700 font-bold absolute top-3 left-3 z-10">Nodo Físico</div><div class="abc-render-wrapper w-full flex-grow mt-4"><div id="score-nat-${i}-pr" class="w-full diamond-mode"></div></div></div></div>`;
-                    container.appendChild(card);
+                    cardElement.innerHTML=`${playBtn}<div class="text-xl font-black text-indigo-700 dark:text-indigo-400 mb-1">${node.t}</div><div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg inline-block mb-3 border border-indigo-100">Objetivo: ${data.s} ${node.nd.map(x=>x.f).join(' o ')}</div><div class="text-[11px] font-mono bg-slate-50 dark:bg-slate-900 px-3 py-2.5 rounded-xl mb-2 w-full"><div class="mb-1 text-slate-500 font-bold text-[9px] uppercase tracking-widest border-b border-slate-200 pb-1">${node.i}</div><div class="text-rose-600 mt-2">▶ Acústica: <strong>${node.pt} (${hz.toFixed(1)}Hz)</strong></div><div class="text-indigo-600 mt-0.5">▶ Escritura: <strong>${node.wp}</strong></div></div><div class="text-[10px] p-2.5 bg-amber-50 rounded-xl text-slate-600"><strong>Bio:</strong> ${node.b}</div>${mb}<div class="grid grid-cols-1 gap-3 flex-grow mt-4"><div class="border border-rose-100 bg-rose-50/50 rounded-xl p-3 relative flex flex-col justify-between min-h-[140px]"><div class="text-[9px] uppercase tracking-widest text-rose-600 font-bold absolute top-3 left-3 z-10">Tono Resultante</div><div class="abc-render-wrapper w-full flex-grow mt-4"><div id="score-nat-${i}-th" class="w-full"></div></div></div><div class="border border-indigo-100 bg-indigo-50/40 rounded-xl p-3 relative flex flex-col justify-between min-h-[140px]"><div class="text-[9px] uppercase tracking-widest text-indigo-700 font-bold absolute top-3 left-3 z-10">Nodo Físico</div><div class="abc-render-wrapper w-full flex-grow mt-4"><div id="score-nat-${i}-pr" class="w-full diamond-mode"></div></div></div></div>`;
+                    container.appendChild(cardElement);
                     if(window.ABCJS){const ao={add_classes:true,responsive:"resize",staffwidth:250,foregroundColor:isD?"#f8fafc":"#1a202c"};ABCJS.renderAbc(`score-nat-${i}-th`,node.u?`${this.abcPrefix}"^8va" [${node.va}]`:`${this.abcPrefix}[${node.a}]`,ao);ABCJS.renderAbc(`score-nat-${i}-pr`,`${this.abcPrefix}${node.nd.map(x=>`"${data.s} ${x.f}"[${x.a}]`).join(" | ")}`,ao);}
                     if(window.lucide)lucide.createIcons();
                 });
             },
             renderArtificialData: function() {
-                const sN=dGe('arm-art-string').value;const fN=parseInt(dGe('arm-art-fret').value);const dN=parseInt(dGe('arm-art-node').value);const c=dGe('arm-results-artificiales');
+                const sN=dGe('arm-art-string').value;const fN=parseInt(dGe('arm-art-fret').value);const dN=parseInt(dGe('arm-art-node').value);const containerElement=dGe('arm-results-artificiales');
                 const nO={12:{n:"+12 (Octava)",as:12},7:{n:"+7 (8va y 5ta)",as:19},5:{n:"+5 (2 Octavas)",as:24},4:{n:"+4 (2 Oct. y 3raM)",as:28}}; const bS=this.baseHzOffsets[sN];const fS=bS+fN;const hS=fS+nO[dN].as; const hz=440*Math.pow(2,hS/12);
-                const gAW=st=>this.getAbcNoteWritten(st+12); const fA=gAW(fS);const vA=gAW(fS+dN); const n8=(hS+12)>26; const tA=n8?gAW(hS-12):gAW(hS); const iD=document.documentElement.classList.contains('dark');
-                c.innerHTML=`<div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 relative"><button onclick="window.ArmonicosApp.playTone(${hz})" class="absolute top-6 right-6 bg-purple-50 text-purple-600 p-3.5 rounded-full z-10"><i data-lucide="play" class="w-5 h-5 fill-current"></i></button><h2 class="text-2xl font-black text-purple-800 dark:text-purple-400 mb-6">Armónico Artificial <span class="opacity-60 text-lg">(${nO[dN].n})</span></h2><div class="text-sm bg-purple-50 dark:bg-purple-900/10 p-5 rounded-2xl mb-8 border border-purple-100"><div class="mb-4"><strong class="text-purple-700">Acústica:</strong> <span class="font-mono bg-white px-2 py-0.5 rounded">${hz.toFixed(1)} Hz (${this.getPitchName(hS)})</span></div><div class="bg-white/60 p-3 rounded-xl"><strong class="text-purple-800">Bio:</strong> Cuerda ${this.guitarStrings[sN].s}, M.I. pisa ${fN}. M.D. roza ${fN+dN} y pulsa.</div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="border border-rose-200 bg-rose-50/30 rounded-2xl p-5 flex flex-col items-center min-h-[180px] relative"><div class="text-[10px] uppercase font-bold text-rose-600 absolute top-4 left-0 w-full text-center">Resultante</div><div id="arm-art-th" class="w-full flex-grow mt-8"></div></div><div class="border border-purple-200 bg-purple-50/30 rounded-2xl p-5 flex flex-col items-center min-h-[180px] relative"><div class="text-[10px] uppercase font-bold text-purple-700 absolute top-4 left-0 w-full text-center">Nodos</div><div id="arm-art-pr" class="w-full flex-grow mt-8"></div></div></div></div>`;
-                if(window.ABCJS){const ao={add_classes:true,responsive:"resize",staffwidth:350,foregroundColor:iD?"#f8fafc":"#1a202c"}; ABCJS.renderAbc(`arm-art-th`,n8?`${this.abcPrefix}"^8va" [${tA}]`:`${this.abcPrefix}[${tA}]`,ao); ABCJS.renderAbc(`arm-art-pr`,`${this.abcPrefix}"M.I"[${fA}!class=diamond-head!${vA}]`,ao);}
+                const gAW=st=>this.getAbcNoteWritten(st+12); const fA=gAW(fS);const vA=gAW(fS+dN); const n8=(hS+12)>26; const tA=n8?gAW(hS-12):gAW(hS); const isDark=document.documentElement.classList.contains('dark');
+                containerElement.innerHTML=`<div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 relative"><button onclick="window.ArmonicosApp.playTone(${hz})" class="absolute top-6 right-6 bg-purple-50 text-purple-600 p-3.5 rounded-full z-10"><i data-lucide="play" class="w-5 h-5 fill-current"></i></button><h2 class="text-2xl font-black text-purple-800 dark:text-purple-400 mb-6">Armónico Artificial <span class="opacity-60 text-lg">(${nO[dN].n})</span></h2><div class="text-sm bg-purple-50 dark:bg-purple-900/10 p-5 rounded-2xl mb-8 border border-purple-100"><div class="mb-4"><strong class="text-purple-700">Acústica:</strong> <span class="font-mono bg-white px-2 py-0.5 rounded">${hz.toFixed(1)} Hz (${this.getPitchName(hS)})</span></div><div class="bg-white/60 p-3 rounded-xl"><strong class="text-purple-800">Bio:</strong> Cuerda ${this.guitarStrings[sN].s}, M.I. pisa ${fN}. M.D. roza ${fN+dN} y pulsa.</div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="border border-rose-200 bg-rose-50/30 rounded-2xl p-5 flex flex-col items-center min-h-[180px] relative"><div class="text-[10px] uppercase font-bold text-rose-600 absolute top-4 left-0 w-full text-center">Resultante</div><div id="arm-art-th" class="w-full flex-grow mt-8"></div></div><div class="border border-purple-200 bg-purple-50/30 rounded-2xl p-5 flex flex-col items-center min-h-[180px] relative"><div class="text-[10px] uppercase font-bold text-purple-700 absolute top-4 left-0 w-full text-center">Nodos</div><div id="arm-art-pr" class="w-full flex-grow mt-8"></div></div></div></div>`;
+                if(window.ABCJS){const ao={add_classes:true,responsive:"resize",staffwidth:350,foregroundColor:isDark?"#f8fafc":"#1a202c"}; ABCJS.renderAbc(`arm-art-th`,n8?`${this.abcPrefix}"^8va" [${tA}]`:`${this.abcPrefix}[${tA}]`,ao); ABCJS.renderAbc(`arm-art-pr`,`${this.abcPrefix}"M.I"[${fA}!class=diamond-head!${vA}]`,ao);}
                 if(window.lucide)lucide.createIcons();
             }
         };
@@ -823,7 +905,7 @@
                     const sl=dGe(`func-slot-${i}`);if(!sl)continue;const aO=this.activeSeq[i];
                     if(aO){
                         let wParts = aO.weber.split('/'); let wBase = wParts[0].replace(/7/g, '').replace('°7', '°'); let wSlash = wParts.length > 1 ? '/' + wParts[1].replace(/7/g, '') : '';
-                        let iT="";if(aO.pcs.length===4){if(aO.inversion===0)iT="⁷";else if(aO.inversion===1)iT="<span class='inv-64'><span>6</span><span>5</span></span>";else if(aO.inversion===2)iT="<span class='inv-64'><span>4</span><span>3</span></span>";else if(aO.inversion===3)iT="²";}else{if(aO.inversion===1)iT="⁶";else if(aO.inversion===2)iT="<span class='inv-64'><span>6</span><span>4</span></span>";}
+                        let iT="";if(aO.pcs.length===4){if(aO.inversion===0)iT="⁷";else if(aO.inversion===1)iT="⁶₅";else if(aO.inversion===2)iT="⁴₃";else if(aO.inversion===3)iT="²";}else{if(aO.inversion===1)iT="⁶";else if(aO.inversion===2)iT="⁶₄";}
                         let amI="";if(aO.inversion>0){amI=`/${this.spellNoteText(aO.midiVoices[0], aO.raiz, aO.pcs)}`;}
                         let wFull = `${wBase}${iT}${wSlash}`; let aFull = `${aO.cifrado}${amI}`;
                         let dL = '';
@@ -917,31 +999,28 @@
             },
             stopPlayback: function() {
                 if(this.playbackTimeouts)this.playbackTimeouts.forEach(clearTimeout);this.playbackTimeouts=[];if(this.activeNodes)this.activeNodes.forEach(n=>{try{n.stop();n.disconnect();}catch(e){}});this.activeNodes=[];this.isPlaying=false;
-                document.querySelectorAll('.blueprint-slot').forEach(el=>el.classList.remove('ring-4','ring-indigo-500','scale-105','z-20'));document.querySelectorAll('.abcjs-note.playing-svg').forEach(el=>el.classList.remove('playing-svg'));
+                document.querySelectorAll('.blueprint-slot').forEach(el=>el.classList.remove('ring-4','ring-indigo-500','scale-105','z-20'));document.querySelectorAll('.playing-svg').forEach(el=>el.classList.remove('playing-svg'));
                 const b=dGe('play-btn');if(b){b.innerHTML=`<i data-lucide="play" class="w-3 h-3 fill-current"></i> Reproducir`;b.className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1";if(window.lucide)lucide.createIcons();}
             },
             togglePlay: function() { if(this.isPlaying)this.stopPlayback();else this.playSequence(); },
             playSequence: function() {
                 if(!this.audioCtx)this.audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(this.audioCtx.state==='suspended')this.audioCtx.resume();
                 this.stopPlayback();this.isPlaying=true;const b=dGe('play-btn');if(b){b.innerHTML=`<i data-lucide="square" class="w-3 h-3 fill-current"></i> Detener`;b.className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1";if(window.lucide)lucide.createIcons();}
-                let sT=this.audioCtx.currentTime+0.1;const tp=1.2;let tC=this.activeSeq.filter(x=>x).length;
-                let vI = 0;
+                let sT=this.audioCtx.currentTime+0.1;const tp=1.2;let tC=this.activeSeq.length;
                 this.activeSeq.forEach((a,i)=>{
                     if(a){
                         a.frecuencias.forEach(hz=>{const o=this.audioCtx.createOscillator();const g=this.audioCtx.createGain();o.type='sine';o.frequency.value=hz;g.gain.setValueAtTime(0,sT);g.gain.linearRampToValueAtTime(0.15,sT+0.05);g.gain.linearRampToValueAtTime(0.1,sT+tp-0.1);g.gain.exponentialRampToValueAtTime(0.001,sT+tp);o.connect(g);g.connect(this.audioCtx.destination);o.start(sT);o.stop(sT+tp);this.activeNodes.push(o);});
-                        let cvI = vI; let dM=(sT-this.audioCtx.currentTime)*1000;
-                        let tI=setTimeout(()=>{
-                            document.querySelectorAll('.blueprint-slot').forEach(el=>el.classList.remove('ring-4','ring-indigo-500','scale-105','z-20'));
-                            const sl=dGe(`func-slot-${i}`);if(sl)sl.classList.add('ring-4','ring-indigo-500','scale-105','z-20');
-                            document.querySelectorAll('.abcjs-note.playing-svg').forEach(el=>el.classList.remove('playing-svg'));
-                            let sn=document.querySelectorAll('#func-abc-score svg .abcjs-note');
-                            if(sn[cvI*2])sn[cvI*2].classList.add('playing-svg');
-                            if(sn[cvI*2+1])sn[cvI*2+1].classList.add('playing-svg');
-                            if(sn[tC*2+cvI*2])sn[tC*2+cvI*2].classList.add('playing-svg');
-                            if(sn[tC*2+cvI*2+1])sn[tC*2+cvI*2+1].classList.add('playing-svg');
-                        },dM);
-                        this.playbackTimeouts.push(tI); vI++;
                     }
+                    let dM=(sT-this.audioCtx.currentTime)*1000;
+                    let tI=setTimeout(()=>{
+                        document.querySelectorAll('.blueprint-slot').forEach(el=>el.classList.remove('ring-4','ring-indigo-500','scale-105','z-20'));
+                        const sl=dGe(`func-slot-${i}`);if(sl)sl.classList.add('ring-4','ring-indigo-500','scale-105','z-20');
+                        document.querySelectorAll('.playing-svg').forEach(el=>el.classList.remove('playing-svg'));
+                        let sn=document.querySelectorAll('#func-abc-score svg .abcjs-note, #func-abc-score svg .abcjs-rest');
+                        if(sn[i])sn[i].classList.add('playing-svg');
+                        if(sn[i+tC])sn[i+tC].classList.add('playing-svg');
+                    },dM);
+                    this.playbackTimeouts.push(tI);
                     sT+=tp;
                 });
                 let fD=(sT-this.audioCtx.currentTime)*1000;let fT=setTimeout(()=>{this.stopPlayback();},fD);this.playbackTimeouts.push(fT);
@@ -958,13 +1037,13 @@
                     if(a){
                         let sN=a.notasABC[3].replace(/\s/g,'');let aN=a.notasABC[2].replace(/\s/g,'');let tN=a.notasABC[1].replace(/\s/g,'');let bN=a.notasABC[0].replace(/\s/g,'');
                         
-                        let classStr = `!class="chord-${i}"!`;
-
                         let wParts = a.weber.split('/'); let wB = wParts[0].replace(/7/g, '').replace('°7', '°'); let wS = wParts.length > 1 ? '/' + wParts[1].replace(/7/g, '') : '';
-                        let iTAbc="";if(a.pcs.length===4){if(a.inversion===0)iTAbc="⁷";else if(a.inversion===1)iTAbc="⁶₅";else if(a.inversion===2)iTAbc="⁴₃";else if(a.inversion===3)iTAbc="²";}else{if(a.inversion===1)iTAbc="⁶";else if(a.inversion===2)iTAbc="⁶₄";}
+                        let iTAbc="";if(a.pcs.length===4){if(a.inversion===0)iTAbc="\"_7\"";else if(a.inversion===1)iTAbc="\"_6\" \"_5\"";else if(a.inversion===2)iTAbc="\"_4\" \"_3\"";else if(a.inversion===3)iTAbc="\"_2\"";}else{if(a.inversion===1)iTAbc="\"_6\"";else if(a.inversion===2)iTAbc="\"_6\" \"_4\"";}
                         let amI="";if(a.inversion>0){amI=`/${this.spellNoteText(a.midiVoices[0], a.raiz, a.pcs)}`;}
-                        let cA=sA?`\"^${a.cifrado}${amI}\"`:"";let cW=sW?`\"_${wB}${iTAbc}${wS}\"`:"";
-                        ts+=`${cA}${classStr}[${sN}${aN}] `;bs+=`${cW}${classStr}[${tN}${bN}] `;
+                        let cA=sA?`\"^${a.cifrado}${amI}\"`:"";
+                        let cW=sW?(wS?`\"_${wB}\" ${iTAbc} \"_${wS}\"`:`\"_${wB}\" ${iTAbc}`):"";
+                        
+                        ts+=`${cA}[${sN}${aN}] `;bs+=`${cW}[${tN}${bN}] `;
                     }else{ts+=`z `;bs+=`z `;}
                     if((i+1)%cp===0){ts+="| ";bs+="| ";}if((i+1)%(cp*4)===0&&i!==this.activeSeq.length-1){ts+="\n";bs+="\n";}
                 });
@@ -972,7 +1051,11 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => { window.EscalasApp.buildStep1(); window.showTab('metrica'); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            window.EscalasApp.buildStep1(); 
+            window.EscalasApp.renderDiccionario();
+            window.showTab('metrica'); 
+        });
     </script>
 </body>
 </html>
