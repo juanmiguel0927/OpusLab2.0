@@ -1473,17 +1473,23 @@
                 if(!this.audioCtx)this.audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(this.audioCtx.state==='suspended')this.audioCtx.resume();
                 this.stopPlayback();this.isPlaying=true;const b=dGe('play-btn');if(b){b.innerHTML=`<i data-lucide="square" class="w-3 h-3 fill-current"></i> Detener`;b.className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1";if(window.lucide)lucide.createIcons();}
                 
-                let sT=this.audioCtx.currentTime+0.1; const tp=1.2; let tC=this.activeSeq.filter(x=>x).length;
+                let sT=this.audioCtx.currentTime+0.1; const tp=1.2; 
+                let tC = this.activeSeq.length; 
                 this.eventMap = []; this.lastDrawnIdx = -1;
 
                 this.activeSeq.forEach((a,i)=>{
                     if(a){
                         let nodes = this.playFMChord(a.frecuencias, sT, tp);
                         this.activeNodes.push(...nodes);
-                        this.eventMap.push({start: sT, end: sT+tp, idx: i, realIdx: this.eventMap.length});
                     }
+                    this.eventMap.push({start: sT, end: sT+tp, idx: i});
                     sT+=tp;
                 });
+
+                const cp=parseInt(dGe('func-cpm')?.value||1);
+                const isMobile = window.innerWidth < 768;
+                const compasesPorLinea = isMobile ? (cp >= 2 ? 1 : 2) : 4; 
+                const chordsPerLine = cp * compasesPorLinea;
 
                 const totalEnd = sT;
                 const loop = () => {
@@ -1493,7 +1499,6 @@
 
                     let currentEvent = this.eventMap.find(e => ct >= e.start && ct < e.end);
                     let cIdx = currentEvent ? currentEvent.idx : -1;
-                    let cRealIdx = currentEvent ? currentEvent.realIdx : -1;
 
                     if(cIdx !== this.lastDrawnIdx) {
                         document.querySelectorAll('.blueprint-slot').forEach(el=>el.classList.remove('ring-4','ring-indigo-500','scale-105','z-20'));
@@ -1501,8 +1506,17 @@
                         if(cIdx !== -1) {
                             const sl=dGe(`func-slot-${cIdx}`);if(sl)sl.classList.add('ring-4','ring-indigo-500','scale-105','z-20');
                             let sn=document.querySelectorAll('#func-abc-score svg .abcjs-note, #func-abc-score svg .abcjs-rest');
-                            if(sn[cRealIdx])sn[cRealIdx].classList.add('playing-svg');
-                            if(sn[cRealIdx+tC])sn[cRealIdx+tC].classList.add('playing-svg');
+                            
+                            let s = Math.floor(cIdx / chordsPerLine);
+                            let c = cIdx % chordsPerLine;
+                            let prevChords = s * chordsPerLine;
+                            let currSysChords = Math.min(chordsPerLine, tC - prevChords);
+                            
+                            let trebleIdx = (prevChords * 2) + c;
+                            let bassIdx = (prevChords * 2) + currSysChords + c;
+                            
+                            if(sn[trebleIdx]) sn[trebleIdx].classList.add('playing-svg');
+                            if(sn[bassIdx]) sn[bassIdx].classList.add('playing-svg');
                         }
                         this.lastDrawnIdx = cIdx;
                     }
@@ -1521,11 +1535,14 @@
                 const compasesPorLinea = isMobile ? (cp >= 2 ? 1 : 2) : 4; 
                 
                 const scoreContainer = dGe('func-abc-score');
-                let parentWidth = scoreContainer && scoreContainer.parentElement ? scoreContainer.parentElement.clientWidth : (isMobile ? 320 : 800);
+                let parentWidth = scoreContainer && scoreContainer.parentElement ? scoreContainer.parentElement.clientWidth : 0;
+                if (!parentWidth || parentWidth < 100) parentWidth = window.innerWidth - 32; 
                 
-                if (parentWidth === 0) parentWidth = window.innerWidth - 40; 
+                let renderScale = isMobile ? 1.8 : 1.3;
+                let forcedWidth = (parentWidth - 10) / renderScale;
 
-                let aS=`X:1\nM:${mt}\nL:1/1\nK:C\n%%leftmargin 0\n%%rightmargin 0\n%%staffsep ${isMobile ? 80 : 60}\n%%stretchlast 1\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\n[V:1] `;let ts="";let bs="";
+                let aS=`X:1\nM:${mt}\nL:1/1\nK:C\n%%leftmargin 2\n%%rightmargin 2\n%%staffsep 60\n%%stretchlast 1\n%%staffwidth ${forcedWidth}\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\n[V:1] `;
+                let ts="";let bs="";
                 const sW=dGe('func-weber')?.checked||false;const sA=dGe('func-american')?.checked||false;
                 this.activeSeq.forEach((a,i)=>{
                     if(a){
@@ -1554,9 +1571,7 @@
                 
                 ABCJS.renderAbc('func-abc-score',aS,{
                     add_classes:true,
-                    responsive: "resize",
-                    staffwidth: parentWidth - 10,
-                    scale: isMobile ? 1.5 : 1.2,
+                    scale: renderScale,
                     foregroundColor:isD?"#f8fafc":"#1a202c"
                 });
             }
