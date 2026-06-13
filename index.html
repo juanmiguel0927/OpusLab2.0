@@ -551,7 +551,10 @@
             if(tId === 'metrica' && window.MetricaApp) window.MetricaApp.update();
             if(tId === 'escalas' && window.EscalasApp && window.EscalasApp.sc) window.EscalasApp.renderVexFlow();
             if(tId === 'armonicos' && window.ArmonicosApp && !window.ArmonicosApp.initialized) { window.ArmonicosApp.init(); window.ArmonicosApp.initialized = true; }
-            if(tId === 'funciones' && window.FuncionesApp && !window.FuncionesApp.initialized) { window.FuncionesApp.init(); window.FuncionesApp.initialized = true; }
+            if(tId === 'funciones' && window.FuncionesApp) { 
+                if(!window.FuncionesApp.initialized) { window.FuncionesApp.init(); window.FuncionesApp.initialized = true; }
+                window.FuncionesApp.renderABCSequence(); 
+            }
         };
         
         window.openModal = function(id) { const el = dGe(id); if(el) { el.classList.remove('hidden'); el.classList.add('flex'); } };
@@ -999,6 +1002,21 @@
                 });
             },
 
+            getSpelledRoot: function(bV, intervalInSemitones, degreeOffset, keyStr) {
+                const letrasBase = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+                const valLetras = { 'C':0, 'D':2, 'E':4, 'F':5, 'G':7, 'A':9, 'B':11 };
+                let keyL = keyStr.charAt(0);
+                let kIdx = letrasBase.indexOf(keyL);
+                let targetIdx = (kIdx + degreeOffset) % 7;
+                let targetL = letrasBase[targetIdx];
+                let targetMidi = valLetras[targetL];
+                let actualMidi = (bV + intervalInSemitones) % 12;
+                let diff = actualMidi - targetMidi;
+                if(diff > 6) diff -= 12; if(diff < -6) diff += 12;
+                let acc = diff === 1 ? "#" : (diff === 2 ? "##" : (diff === -1 ? "b" : (diff === -2 ? "bb" : "")));
+                return targetL + acc;
+            },
+
             spellNoteText: function(midi, aO) {
                 let rStr = aO.raiz; let pcs = aO.pcs;
                 let pc = midi % 12;
@@ -1062,6 +1080,7 @@
             getChordsForMap: function() {
                 const bV=valLetras[(dGe('func-key')?.value||'C').charAt(0).toUpperCase()]+((dGe('func-key')?.value||'C').includes('b')?-1:((dGe('func-key')?.value||'C').includes('#')?1:0)); 
                 const estr=(dGe('func-mode')?.value||'mayor')==='mayor'?this.estructuraMayor:this.estructuraMenor; let ac=[];
+                
                 estr.forEach(e=>{
                     const rn=this.spellNoteText(bV+e.s, {raiz: dGe('func-key')?.value||'C', pcs: [0]}); let r=(bV+e.s)%12; let t3=(r+(e.t.includes('m')||e.t.includes('dim')?3:4))%12; let t5=(r+(e.t.includes('dim')?6:7))%12; let pcs=[r,t3,t5];
                     let cb=e.t.replace('M','').replace('dim7','º7').replace('dim','º'); if(e.t.includes('7')){pcs.push((r+(e.t==='dim7'?9:10))%12);if(!cb.includes('7'))cb+='7';}
@@ -1078,17 +1097,19 @@
                 }); 
                 
                 if(dGe('func-mode')?.value === 'mayor') {
-                    let rootb3 = this.spellNoteText(bV+3, {raiz: dGe('func-key')?.value||'C', pcs: [0]}); let rootiv = this.spellNoteText(bV+5, {raiz: dGe('func-key')?.value||'C', pcs: [0]});
-                    let rootb6 = this.spellNoteText(bV+8, {raiz: dGe('func-key')?.value||'C', pcs: [0]}); let rootb7 = this.spellNoteText(bV+10, {raiz: dGe('func-key')?.value||'C', pcs: [0]});
+                    let rootb3 = this.getSpelledRoot(bV, 3, 2, dGe('func-key')?.value||'C');
+                    let rootiv = this.getSpelledRoot(bV, 5, 3, dGe('func-key')?.value||'C');
+                    let rootb6 = this.getSpelledRoot(bV, 8, 5, dGe('func-key')?.value||'C');
+                    let rootb7 = this.getSpelledRoot(bV, 10, 6, dGe('func-key')?.value||'C');
                     sD.push({ grado: "bIII", raiz: rootb3, tipo: "M", name: "Mediante (bIII)", cifrado: `${rootb3}`, weber: "bIII", gradoNumerico: 2.5, pcs: [(bV+3)%12, (bV+7)%12, (bV+10)%12], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Intercambio Modal" });
                     sD.push({ grado: "iv", raiz: rootiv, tipo: "m", name: "Subdom. (iv)", cifrado: `${rootiv}m`, weber: "iv", gradoNumerico: 3.5, pcs: [(bV+5)%12, (bV+8)%12, (bV+0)%12], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Intercambio Modal" });
                     sD.push({ grado: "bVI", raiz: rootb6, tipo: "M", name: "Superdom. (bVI)", cifrado: `${rootb6}`, weber: "bVI", gradoNumerico: 5.5, pcs: [(bV+8)%12, (bV+0)%12, (bV+3)%12], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Intercambio Modal" });
                     sD.push({ grado: "bVII", raiz: rootb7, tipo: "M", name: "Subtónica (bVII)", cifrado: `${rootb7}`, weber: "bVII", gradoNumerico: 6.5, pcs: [(bV+10)%12, (bV+2)%12, (bV+5)%12], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Intercambio Modal" });
                 }
 
-                let rootN = this.spellNoteText(bV+1, {raiz: dGe('func-key')?.value||'C', pcs: [0]});
+                let rootN = this.getSpelledRoot(bV, 1, 1, dGe('func-key')?.value||'C');
                 sD.push({ grado: "N", raiz: rootN, tipo: "M", name: "Napolitano", cifrado: `${rootN}`, weber: "N", gradoNumerico: 1.5, pcs: [(bV+1)%12, (bV+5)%12, (bV+8)%12], doubling: (bV+5)%12, abcDegrees: ["b2", "4", "b6"], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Avanzada" });
-                let rootA6 = this.spellNoteText(bV+8, {raiz: dGe('func-key')?.value||'C', pcs: [0]});
+                let rootA6 = this.getSpelledRoot(bV, 8, 5, dGe('func-key')?.value||'C');
                 sD.push({ grado: "It+6", raiz: rootA6, tipo: "It+6", name: "Italiana +6", cifrado: `${rootA6}It+6`, weber: "It+6", gradoNumerico: 5.6, pcs: [(bV+8)%12, (bV+0)%12, (bV+6)%12], doubling: (bV+0)%12, abcDegrees: ["b6", "1", "#4"], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Avanzada" });
                 sD.push({ grado: "Fr+6", raiz: rootA6, tipo: "Fr+6", name: "Francesa +6", cifrado: `${rootA6}Fr+6`, weber: "Fr+6", gradoNumerico: 5.7, pcs: [(bV+8)%12, (bV+0)%12, (bV+2)%12, (bV+6)%12], abcDegrees: ["b6", "1", "2", "#4"], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Avanzada" });
                 sD.push({ grado: "Ger+6", raiz: rootA6, tipo: "Ger+6", name: "Alemana +6", cifrado: `${rootA6}Ger+6`, weber: "Ger+6", gradoNumerico: 5.8, pcs: [(bV+8)%12, (bV+0)%12, (bV+3)%12, (bV+6)%12], abcDegrees: ["b6", "1", "b3", "#4"], midiVoices: [], notasABC: [], frecuencias: [], tactica: "Avanzada" });
@@ -1194,43 +1215,75 @@
             addToSequence: function(bA) {
                 const eI=this.activeSeq.findIndex(s=>s===null);if(eI===-1)return;let a=JSON.parse(JSON.stringify(bA));
                 const iS=dGe('func-inv');
-                a.inversion = (iS&&iS.value==='random') ? 0 : (iS?parseInt(iS.value):0); 
-                if(a.inversion>2&&a.pcs.length<4)a.inversion=0;
+                
+                if (a.weber === 'N') {
+                    a.inversion = 1; 
+                } else {
+                    a.inversion = (iS&&iS.value==='random') ? 0 : (iS?parseInt(iS.value):0); 
+                    if(a.inversion>2&&a.pcs.length<4)a.inversion=0;
+                }
+                
                 this.activeSeq[eI]=a; this.applyGlobalVoiceLeading(); this.syncBlueprintDOM(); 
                 if(this.activeSeq[eI].frecuencias) this.playChord(this.activeSeq[eI].frecuencias);
                 this.renderABCSequence();this.updateMap(); 
             },
             autoGenerateSequence: function() {
-                const cp=parseInt(dGe('func-cpm')?.value||1);const chs=this.getChordsForMap();this.activeSeq.fill(null);
+                const cp=parseInt(dGe('func-cpm')?.value||1);
+                const chs=this.getChordsForMap();
+                const userTactic = dGe('func-tactic').value; 
+                this.activeSeq.fill(null);
                 let lastRoot = null;
+                
                 for(let i=0;i<this.activeSeq.length;i++){
                     let bN=cp===1?1:(cp===2?(i%2===0?1:3):(i%cp)+1);
                     let pC=i>0?this.activeSeq[i-1]:null;
                     let aC=[]; let tT="Inicial";
                     
                     if(!pC){
-                        aC=chs.filter(c=>c.tactica==='Inicial' && !c.tactica.includes('Secundaria') && !c.tactica.includes('Intercambio Modal') && !c.tactica.includes('Avanzada'));
+                        aC=chs.filter(c=>c.weber === 'I' || c.weber === 'i');
                     } else {
-                        if (pC.weber.includes('V7/')) {
-                            let target = pC.weber.split('/')[1]; aC = chs.filter(c => c.weber === target); tT = "Fuerte";
+                        if (pC.weber.includes('/')) {
+                            let target = pC.weber.split('/')[1]; 
+                            aC = chs.filter(c => c.weber.replace(/7|°/g, '') === target.replace(/7|°/g, ''));
+                            if (aC.length === 0) aC = chs.filter(c => c.weber === target); 
+                            tT = "Fuerte";
                         } else if (pC.weber.includes('+6') || pC.weber === 'N') {
-                            aC = chs.filter(c => c.weber === 'V' || c.weber === 'V7'); tT = "Fuerte";
-                        } else if (pC.weber === 'V' || pC.weber === 'V7') {
-                            aC = chs.filter(c => c.weber === 'I' || c.weber === 'vi'); tT = "Fuerte";
-                        } else if (pC.weber === 'ii' || pC.weber === 'IV') {
-                            aC = chs.filter(c => c.weber === 'V' || c.weber === 'V7' || c.weber === 'vii°7' || c.weber === 'N'); tT = "Fuerte";
-                        } else if (pC.weber === 'I') {
-                            aC = chs.filter(c => c.weber !== 'I' && !c.weber.includes('/')); tT = "Débil";
+                            aC = chs.filter(c => c.weber === 'V' || c.weber === 'V7'); 
+                            tT = "Fuerte";
                         } else {
-                            aC = chs.filter(c => !c.weber.includes('/')); tT = "Débil";
+                            let validTargets = chs.filter(c => {
+                                if (c.tactica === 'Avanzada' && userTactic !== 'Mixta') return false; 
+                                
+                                let d = (Math.floor(c.gradoNumerico) - Math.floor(pC.gradoNumerico) + 7) % 7;
+                                let isFuerte = (d === 3 || d === 5);
+                                let isDebil = (d === 4 || d === 2);
+                                let isSuper = (d === 1 || d === 6);
+
+                                if (userTactic === 'Fuerte') return isFuerte;
+                                if (userTactic === 'Débil') return isDebil || isFuerte; 
+                                if (userTactic === 'Superfuerte') return isSuper || isFuerte;
+                                
+                                return true; 
+                            });
+
+                            if (validTargets.length > 0) {
+                                aC = validTargets;
+                                tT = userTactic !== 'Mixta' ? userTactic : "Fuerte"; 
+                            } else {
+                                aC = chs.filter(c => c.weber === 'V' || c.weber === 'I' || c.weber === 'i');
+                                tT = "Fuerte";
+                            }
                         }
                     }
                     
                     if(aC.length===0){ aC=chs.filter(c=>c.gradoNumerico===0||c.gradoNumerico===4); tT="Fuerte"; }
-                    let sC=aC[Math.floor(Math.random()*aC.length)];let aO=JSON.parse(JSON.stringify(sC));
+                    let sC=aC[Math.floor(Math.random()*aC.length)];
+                    let aO=JSON.parse(JSON.stringify(sC));
                     
                     const iS=dGe('func-inv');
-                    if(iS&&iS.value==='random') {
+                    if(aO.weber === 'N') {
+                        aO.inversion = 1;
+                    } else if(iS&&iS.value==='random') {
                         if(lastRoot !== null) {
                             let bestInv = 0; let minJump = Infinity;
                             for(let inv=0; inv<(aO.pcs.length===4?4:3); inv++) {
@@ -1239,7 +1292,9 @@
                             }
                             aO.inversion = bestInv;
                         } else { aO.inversion = 0; }
-                    } else { aO.inversion = iS?parseInt(iS.value):0; }
+                    } else { 
+                        aO.inversion = iS?parseInt(iS.value):0; 
+                    }
                     
                     if(aO.inversion>2&&aO.pcs.length<4)aO.inversion=0;
                     if(i===this.activeSeq.length-1) aO.inversion=0; 
@@ -1463,17 +1518,14 @@
                 if(!window.ABCJS)return;const mt=dGe('func-meter')?.value||'4/4';const cp=parseInt(dGe('func-cpm')?.value||1);const isD=document.documentElement.classList.contains('dark');
                 
                 const isMobile = window.innerWidth < 768;
-                const compasesPorLinea = isMobile ? 2 : 4; 
+                const compasesPorLinea = isMobile ? (cp >= 2 ? 1 : 2) : 4; 
                 
                 const scoreContainer = dGe('func-abc-score');
                 let parentWidth = scoreContainer && scoreContainer.parentElement ? scoreContainer.parentElement.clientWidth : (isMobile ? 320 : 800);
                 
-                // MÁS GRANDE: Reducimos el forcedWidth matemático e incrementamos el scale de renderizado
-                let renderScale = isMobile ? 2.0 : 1.5;
-                let forcedWidth = Math.max(200, (parentWidth - 20) / renderScale);
+                if (parentWidth === 0) parentWidth = window.innerWidth - 40; 
 
-                // Se inyecta stretchlast y staffwidth directamente en la gramática para violar la justificación natural
-                let aS=`X:1\nM:${mt}\nL:1/1\nK:C\n%%leftmargin 5\n%%rightmargin 5\n%%staffsep 60\n%%stretchlast 1\n%%staffwidth ${forcedWidth}\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\n[V:1] `;let ts="";let bs="";
+                let aS=`X:1\nM:${mt}\nL:1/1\nK:C\n%%leftmargin 0\n%%rightmargin 0\n%%staffsep ${isMobile ? 80 : 60}\n%%stretchlast 1\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\n[V:1] `;let ts="";let bs="";
                 const sW=dGe('func-weber')?.checked||false;const sA=dGe('func-american')?.checked||false;
                 this.activeSeq.forEach((a,i)=>{
                     if(a){
@@ -1503,7 +1555,8 @@
                 ABCJS.renderAbc('func-abc-score',aS,{
                     add_classes:true,
                     responsive: "resize",
-                    scale: renderScale,
+                    staffwidth: parentWidth - 10,
+                    scale: isMobile ? 1.5 : 1.2,
                     foregroundColor:isD?"#f8fafc":"#1a202c"
                 });
             }
