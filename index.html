@@ -31,11 +31,11 @@
         @keyframes fadeIn { from{opacity:0;transform:translateY(5px);} to{opacity:1;transform:translateY(0);} }
         
         .tabs-container { position:sticky; top:0; z-index:50; background:white; border-bottom:1px solid #e2e8f0; transition:all 0.3s; }
-        .tabs-wrapper { display:flex; justify-content:center; overflow-x:auto; white-space:nowrap; scrollbar-width:none; padding:0 1rem; }
+        .tabs-wrapper { display:flex; justify-content:flex-start; overflow-x:auto; white-space:nowrap; scrollbar-width:none; padding:0 0.5rem; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; gap: 0.25rem; }
         .tabs-wrapper::-webkit-scrollbar { display:none; }
         
-        .nav-btn { padding:0.8rem 1rem; font-size:0.75rem; font-weight:800; color:#64748b; border-bottom:3px solid transparent; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:0.3rem; min-width:120px; flex-shrink:0; text-transform:uppercase; letter-spacing:0.05em; }
-        @media(min-width:768px){.nav-btn{font-size:0.85rem;flex-direction:row;gap:0.6rem;min-width:auto;padding:1.2rem 2rem;}}
+        .nav-btn { scroll-snap-align: start; padding:0.6rem 0.75rem; font-size:0.7rem; font-weight:800; color:#64748b; border-bottom:3px solid transparent; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:0.3rem; flex: 0 0 auto; text-transform:uppercase; letter-spacing:0.05em; }
+        @media(min-width:768px){.tabs-wrapper { justify-content:center; } .nav-btn{font-size:0.85rem;flex-direction:row;gap:0.6rem;padding:1.2rem 2rem;}}
         
         /* Tema por Pestaña */
         .tab-metrica .icon-color{color:#4f46e5;} .tab-metrica.active-tab{color:#3730a3;border-bottom-color:#4f46e5;background:rgba(79,70,229,0.05);}
@@ -82,7 +82,7 @@
         .abcjs-annotation{font-style:italic;font-weight:bold;font-family:serif;font-size:14px;fill:#1a202c;} .dark .abcjs-annotation{fill:#f8fafc;}
         .diamond-head{transform-box:fill-box;transform-origin:center;transform:scale(0.9) scaleX(0.7) rotate(45deg) !important;fill:transparent !important;stroke:#1d4ed8 !important;stroke-width:2.5px !important;} .dark .diamond-head{stroke:#60a5fa !important;}
         
-        .abc-render-wrapper{min-height:140px;display:flex;align-items:center;justify-content:center;overflow:visible;}
+        .abc-render-wrapper{min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;width:100%;}
         .tab-btn-arm.active{border-bottom:2px solid #2563eb;color:#1d4ed8;background-color:#eff6ff;} .dark .tab-btn-arm.active{border-bottom:2px solid #60a5fa;color:#60a5fa;background-color:rgba(37,99,235,0.1);}
         
         .node-card{transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer;border-width:2px;} .node-card:hover{transform:translateY(-5px) scale(1.05);z-index:10;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);}
@@ -125,22 +125,36 @@
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <div class="bg-indigo-600 p-1.5 rounded-lg text-white shadow-sm"><i data-lucide="flask-conical" class="w-5 h-5"></i></div>
+                <div class="bg-indigo-600 p-1.5 rounded-lg text-white shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></svg>
+                </div>
                 <div class="flex flex-col">
                     <h1 class="text-xl font-black tracking-tight leading-none">OpusLab <span class="text-indigo-600">2.0</span></h1>
                     <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Por Juan Miguel Rios Redondo</span>
                 </div>
             </div>
             <button onclick="window.toggleTheme()" class="p-2 bg-slate-100 rounded-lg text-slate-500 hover:bg-slate-200 transition-colors shadow-sm dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300">
-                <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
             </button>
         </div>
         <div class="tabs-container">
             <div class="tabs-wrapper" id="main-tabs">
-                <button onclick="window.showTab('metrica')" class="nav-btn tab-metrica active-tab" data-tab="metrica"><i data-lucide="clock" class="w-5 h-5 icon-color"></i><span>Tipos de Compases</span></button>
-                <button onclick="window.showTab('escalas')" class="nav-btn tab-escalas" data-tab="escalas"><i data-lucide="fingerprint" class="w-5 h-5 icon-color"></i><span>Escalas Modales</span></button>
-                <button onclick="window.showTab('armonicos')" class="nav-btn tab-armonicos" data-tab="armonicos"><i data-lucide="waves" class="w-5 h-5 icon-color"></i><span>Armónicos</span></button>
-                <button onclick="window.showTab('funciones')" class="nav-btn tab-funciones" data-tab="funciones"><i data-lucide="network" class="w-5 h-5 icon-color"></i><span>Funciones</span></button>
+                <button onclick="window.showTab('metrica')" class="nav-btn tab-metrica active-tab" data-tab="metrica">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 icon-color shrink-0 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Tipos de Compases</span>
+                </button>
+                <button onclick="window.showTab('escalas')" class="nav-btn tab-escalas" data-tab="escalas">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 icon-color shrink-0 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10"/><path d="M5 12a7 7 0 0 1 14 0"/><path d="M8 12a4 4 0 0 1 8 0"/><path d="M11 12h2"/></svg>
+                    <span>Escalas Modales</span>
+                </button>
+                <button onclick="window.showTab('armonicos')" class="nav-btn tab-armonicos" data-tab="armonicos">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 icon-color shrink-0 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6 0 1.2-.2 1.7-.6l.7-.5c.8-.6 1.8-.9 2.8-.9s2 .3 2.8.9l.7.5c.5.4 1.1.6 1.7.6"/><path d="M2 12c.6 0 1.2-.2 1.7-.6l.7-.5c.8-.6 1.8-.9 2.8-.9s2 .3 2.8.9l.7.5c.5.4 1.1.6 1.7.6"/><path d="M2 18c.6 0 1.2-.2 1.7-.6l.7-.5c.8-.6 1.8-.9 2.8-.9s2 .3 2.8.9l.7.5c.5.4 1.1.6 1.7.6"/></svg>
+                    <span>Armónicos</span>
+                </button>
+                <button onclick="window.showTab('funciones')" class="nav-btn tab-funciones" data-tab="funciones">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 icon-color shrink-0 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
+                    <span>Funciones</span>
+                </button>
             </div>
         </div>
     </header>
@@ -150,8 +164,10 @@
         <!-- PESTAÑA 1: Métrica -->
         <div id="metrica" class="tab-content active space-y-6">
             <div class="flex items-center justify-between mb-4">
-                <div><h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Análisis Métrico</h2></div>
-                <button onclick="window.openModal('help-metrica')" class="p-3 bg-indigo-50 text-indigo-600 rounded-xl dark:bg-indigo-900/30 dark:text-indigo-400"><i data-lucide="info" class="w-6 h-6"></i></button>
+                <div><h2 class="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">Análisis Métrico</h2></div>
+                <button onclick="window.openModal('help-metrica')" class="p-3 bg-indigo-50 text-indigo-600 rounded-xl dark:bg-indigo-900/30 dark:text-indigo-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                </button>
             </div>
             <section class="card grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-6">
                 <div class="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 h-full">
@@ -162,9 +178,13 @@
                     </div>
                     <div class="relative flex flex-col items-center w-full">
                         <div class="flex items-center gap-4">
-                            <button onclick="window.MetricaApp.changeNum(-1)" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border flex items-center justify-center active:scale-95"><i data-lucide="minus" class="w-5 h-5"></i></button>
+                            <button onclick="window.MetricaApp.changeNum(-1)" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border flex items-center justify-center active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+                            </button>
                             <input type="number" id="metrica-num" value="4" onchange="window.MetricaApp.handleNumInput(this.value)" class="w-24 text-7xl font-serif font-black text-center bg-transparent border-none outline-none">
-                            <button onclick="window.MetricaApp.changeNum(1)" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border flex items-center justify-center active:scale-95"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                            <button onclick="window.MetricaApp.changeNum(1)" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border flex items-center justify-center active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            </button>
                         </div>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest absolute -top-5">Cant. Valores</p>
                         <div class="w-40 h-2 bg-slate-900 dark:bg-slate-600 my-4 rounded-full"></div>
@@ -207,11 +227,11 @@
         <div id="escalas" class="tab-content space-y-6">
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Identificación Modal</h2>
-                    <p class="text-blue-600 dark:text-blue-400 font-bold text-sm tracking-wide uppercase mt-1">"Cada escala tiene un ADN, apréndelo a reconocer."</p>
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">Identificación Modal</h2>
+                    <p class="text-blue-600 dark:text-blue-400 font-bold text-xs sm:text-sm tracking-wide uppercase mt-1">"Cada escala tiene un ADN, apréndelo a reconocer."</p>
                 </div>
                 <button onclick="window.openModal('modal-diccionario')" class="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors shadow-sm flex items-center gap-2">
-                    <i data-lucide="book" class="w-6 h-6"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
                     <span class="hidden sm:inline font-bold text-sm">Diccionario</span>
                 </button>
             </div>
@@ -225,15 +245,24 @@
                     <select id="filtro-familia" class="escala-select opus-input px-4 py-3 font-semibold w-full sm:w-1/2 text-sm shadow-sm">
                         <option value="Todas">Todas las Familias</option><option value="Mayor">Escala Mayor</option><option value="Menor Armónica">Menor Armónica</option><option value="Menor Melódica">Menor Melódica</option><option value="Mayor Armónica">Mayor Armónica</option>
                     </select>
-                    <button onclick="window.EscalasApp.generarModo()" class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold shadow-md active:scale-95 flex items-center justify-center gap-2"><i data-lucide="refresh-cw" class="w-5 h-5"></i> Generar Modo</button>
+                    <button onclick="window.EscalasApp.generarModo()" class="w-full sm:w-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold shadow-md active:scale-95 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Generar Modo
+                    </button>
                 </div>
             </div>
             
             <section id="partitura-section" class="card hidden flex-col items-center relative overflow-hidden bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 p-5 sm:p-8">
                 <div class="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 px-2 gap-4">
-                    <h3 class="font-extrabold text-lg sm:text-xl flex items-center gap-2"><i data-lucide="music" class="w-5 h-5 text-slate-400"></i> Partitura (Clave de Sol)</h3>
+                    <h3 class="font-extrabold text-lg sm:text-xl flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        Partitura (Clave de Sol)
+                    </h3>
                     <div class="flex flex-wrap items-center gap-3">
-                        <button onclick="window.EscalasApp.reproducirEscala()" class="bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow flex items-center gap-2"><i data-lucide="play" class="w-4 h-4 fill-current"></i> Escuchar (Melodía)</button>
+                        <button onclick="window.EscalasApp.reproducirEscala()" class="bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Escuchar (Melodía)
+                        </button>
                         <div class="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm px-2 py-1.5 h-[38px]">
                             <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold px-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                 <input type="checkbox" id="toggle-notas" onchange="window.EscalasApp.toggleNotas()" class="w-4 h-4 accent-blue-600"><span>Ayuda visual</span>
@@ -267,7 +296,9 @@
                 <div class="card p-6 sm:p-8 locked-step" id="paso-3">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-bold text-lg flex items-center gap-3"><span class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-3">3</span>Modo Diatónico</h3>
-                        <button onclick="window.openModal('modal-ayuda-diatonico')" class="text-slate-400 hover:text-blue-600 transition-colors flex items-center justify-center"><i data-lucide="help-circle" class="w-6 h-6"></i></button>
+                        <button onclick="window.openModal('modal-ayuda-diatonico')" class="text-slate-400 hover:text-blue-600 transition-colors flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                        </button>
                     </div>
                     <p class="text-sm text-slate-500 mb-5 font-medium ml-11">¿Qué notas característica principal y secundaria (diferencial) tiene la escala?</p>
                     <div class="ml-0 sm:ml-11">
@@ -279,7 +310,9 @@
                 <div class="card p-6 sm:p-8 locked-step" id="paso-4">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-bold text-lg flex items-center gap-3"><span class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm" id="badge-4">4</span>Acorde de Verificación</h3>
-                        <button onclick="window.openModal('modal-ayuda-acordes')" class="text-slate-400 hover:text-blue-600 transition-colors flex items-center justify-center"><i data-lucide="help-circle" class="w-6 h-6"></i></button>
+                        <button onclick="window.openModal('modal-ayuda-acordes')" class="text-slate-400 hover:text-blue-600 transition-colors flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                        </button>
                     </div>
                     <p class="text-sm text-slate-500 mb-5 font-medium ml-11">Acorde diatónico asociado al modo base. Al seleccionarlo se alumbrarán sus notas en el pentagrama.</p>
                     <div class="ml-0 sm:ml-11">
@@ -298,7 +331,10 @@
             </div>
             
             <div id="resultados-panel" class="hidden mt-6 opus-card p-6 sm:p-8 border-t-4 border-t-blue-600 bg-blue-50 dark:bg-blue-900/10">
-                <h3 class="text-2xl font-extrabold text-blue-900 dark:text-blue-400 flex items-center gap-2 mb-6 border-b border-blue-200 dark:border-blue-800/50 pb-3"><i data-lucide="check-circle-2" class="w-7 h-7 text-blue-600"></i> Análisis Completo</h3>
+                <h3 class="text-2xl font-extrabold text-blue-900 dark:text-blue-400 flex items-center gap-2 mb-6 border-b border-blue-200 dark:border-blue-800/50 pb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    Análisis Completo
+                </h3>
                 <div class="space-y-4">
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-blue-100 dark:border-slate-700 flex flex-col items-center w-full overflow-hidden">
                         <span class="block text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Estructura Interválica</span>
@@ -312,7 +348,9 @@
                         <div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-pink-100 bg-pink-50/20 dark:border-pink-900/50 dark:bg-pink-900/10 lg:col-span-2"><span class="block text-[10px] font-bold text-pink-400 uppercase mb-1">Alteración Adicional</span><span class="font-extrabold text-xl text-pink-600 dark:text-pink-400 font-mono tracking-widest" id="resumen-alteracion"></span></div>
                     </div>
                     <div class="bg-blue-600 dark:bg-blue-700 text-white p-6 rounded-xl shadow-lg mt-6 text-center relative overflow-hidden">
-                        <div class="absolute -right-10 -top-10 opacity-10"><i data-lucide="fingerprint" class="w-48 h-48"></i></div>
+                        <div class="absolute -right-10 -top-10 opacity-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-48 h-48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10"/><path d="M5 12a7 7 0 0 1 14 0"/><path d="M8 12a4 4 0 0 1 8 0"/><path d="M11 12h2"/></svg>
+                        </div>
                         <span class="block text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1 relative z-10">Escala Identificada</span>
                         <span class="font-black text-3xl block relative z-10" id="resumen-nombre"></span>
                         <span class="font-bold text-blue-300 mt-1 block uppercase tracking-wider text-sm relative z-10" id="resumen-origen"></span>
@@ -326,7 +364,7 @@
 
         <!-- PESTAÑA 3: ARMÓNICOS -->
         <div id="armonicos" class="tab-content space-y-6">
-            <div class="flex items-center justify-between mb-4"><h2 class="text-2xl font-black uppercase">Laboratorio de Armónicos</h2></div>
+            <div class="flex items-center justify-between mb-4"><h2 class="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight">Laboratorio de Armónicos</h2></div>
             <div class="flex border-b mb-6"><button onclick="window.ArmonicosApp.switchTab('naturales')" id="arm-tab-naturales" class="tab-btn-arm active px-6 py-3 font-semibold">Naturales</button><button onclick="window.ArmonicosApp.switchTab('artificiales')" id="arm-tab-artificiales" class="tab-btn-arm px-6 py-3 font-semibold">Artificiales</button></div>
             <div id="arm-view-naturales">
                 <div class="flex gap-4 mb-6"><select id="arm-string-select" onchange="window.ArmonicosApp.renderNaturalData()" class="escala-select opus-input w-1/2"><option value="1">1ra Cuerda (Mi)</option><option value="2">2da Cuerda (Si)</option><option value="3">3ra Cuerda (Sol)</option><option value="4">4ta Cuerda (Re)</option><option value="5">5ta Cuerda (La)</option><option value="6">6ta Cuerda (Mi)</option></select><select id="arm-sort-select" onchange="window.ArmonicosApp.renderNaturalData()" class="escala-select opus-input w-1/2"><option value="physical">Por Topografía</option><option value="acoustic">Por Acústica</option></select></div>
@@ -341,8 +379,10 @@
         <!-- PESTAÑA 4: FUNCIONES -->
         <div id="funciones" class="tab-content space-y-6">
              <div class="flex items-center justify-between mb-4">
-                 <h2 class="text-2xl font-black uppercase text-center sm:text-left">Funciones Estructurales</h2>
-                 <button onclick="window.openModal('help-funciones')" class="p-3 bg-fuchsia-50 text-fuchsia-600 rounded-xl dark:bg-fuchsia-900/30 dark:text-fuchsia-400"><i data-lucide="info" class="w-6 h-6"></i></button>
+                 <h2 class="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tight text-center sm:text-left">Funciones Estructurales</h2>
+                 <button onclick="window.openModal('help-funciones')" class="p-3 bg-fuchsia-50 text-fuchsia-600 rounded-xl dark:bg-fuchsia-900/30 dark:text-fuchsia-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                 </button>
              </div>
              
              <div class="card flex flex-wrap gap-4 items-end bg-slate-50 dark:bg-slate-900/50">
@@ -386,12 +426,21 @@
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-xs font-bold uppercase">CORAL</span>
                         <div class="flex gap-2">
-                            <button onclick="window.FuncionesApp.downloadMidi()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-900/60"><i data-lucide="file-audio" class="w-3 h-3"></i> MIDI</button>
-                            <button onclick="window.FuncionesApp.downloadScore()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1"><i data-lucide="download" class="w-3 h-3"></i> JPG</button>
-                            <button id="play-btn" onclick="window.FuncionesApp.togglePlay()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1"><i data-lucide="play" class="w-3 h-3 fill-current"></i> Reproducir</button>
+                            <button onclick="window.FuncionesApp.downloadXML()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-900/60">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 13-2 2 2 2"/><path d="m14 17 2-2-2-2"/></svg>
+                                XML
+                            </button>
+                            <button onclick="window.FuncionesApp.downloadScore()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                JPG
+                            </button>
+                            <button id="play-btn" onclick="window.FuncionesApp.togglePlay()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 fill-current" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                Reproducir
+                            </button>
                         </div>
                     </div>
-                    <div class="abc-render-wrapper bg-white dark:bg-slate-800 p-2 border border-slate-200 dark:border-slate-700 rounded-lg"><div id="func-abc-score" class="w-full"></div></div>
+                    <div class="abc-render-wrapper bg-white dark:bg-slate-800 py-4 px-1 sm:px-4 border border-slate-200 dark:border-slate-700 rounded-lg w-full overflow-hidden flex justify-center"><div id="func-abc-score" class="w-full max-w-full"></div></div>
                 </div>
             </div>
         </div>
@@ -404,8 +453,13 @@
     <!-- Modales -->
     <div id="help-metrica" class="hidden modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-xl w-full p-8 md:p-10 relative max-h-[90vh] overflow-y-auto">
-            <button onclick="window.closeModal('help-metrica')" class="absolute top-6 right-6 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"><i data-lucide="x" class="w-6 h-6"></i></button>
-            <h3 class="text-2xl font-black mb-6 border-b pb-4"><i data-lucide="book-open" class="text-indigo-600 inline"></i> Conceptos Teóricos</h3>
+            <button onclick="window.closeModal('help-metrica')" class="absolute top-6 right-6 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 class="text-2xl font-black mb-6 border-b pb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-indigo-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                Conceptos Teóricos
+            </h3>
             <div class="space-y-5 text-sm text-slate-700 dark:text-slate-300">
                 <p><strong>Compás Simple:</strong> Numeradores 2, 3 o 4. Subdivisión binaria.</p>
                 <p><strong>Compás Compuesto:</strong> Numeradores 6, 9 o 12. Subdivisión ternaria.</p>
@@ -419,10 +473,11 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col relative overflow-hidden border border-slate-200 dark:border-slate-700">
             <div class="flex-none p-4 sm:p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 z-20">
                 <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <i data-lucide="book" class="text-blue-600 dark:text-blue-400 w-5 h-5"></i> Diccionario Modal
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    Diccionario Modal
                 </h3>
                 <button onclick="window.closeModal('modal-diccionario')" class="p-2 rounded-xl bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-red-900/50 dark:hover:text-red-400 transition-all cursor-pointer">
-                    <i data-lucide="x" class="w-6 h-6"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 </button>
             </div>
             <div id="diccionario-content" class="p-4 sm:p-6 overflow-y-auto bg-white dark:bg-slate-900 flex-grow">
@@ -432,8 +487,13 @@
 
     <div id="modal-ayuda-diatonico" class="hidden modal-overlay fixed inset-0 z-[110] flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 relative">
-            <button onclick="window.closeModal('modal-ayuda-diatonico')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
-            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 pb-3 flex items-center gap-2"><i data-lucide="music" class="text-blue-600 w-6 h-6"></i> Notas Características</h3>
+            <button onclick="window.closeModal('modal-ayuda-diatonico')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                Notas Características
+            </h3>
             <div class="space-y-5 text-sm text-slate-700 dark:text-slate-300">
                 <div><h4 class="font-bold text-blue-600 uppercase text-xs mb-2 tracking-wider">Modos Mayores</h4><ul class="space-y-2"><li class="bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 flex justify-between"><span class="font-semibold text-slate-800 dark:text-slate-200">Jónico</span> <span class="font-mono text-blue-700 dark:text-blue-400 font-bold">4 & 7</span></li><li class="bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 flex justify-between"><span class="font-semibold text-slate-800 dark:text-slate-200">Lidio</span> <span class="font-mono text-blue-700 dark:text-blue-400 font-bold">#4 & 7</span></li><li class="bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 flex justify-between"><span class="font-semibold text-slate-800 dark:text-slate-200">Mixolidio</span> <span class="font-mono text-blue-700 dark:text-blue-400 font-bold">b7 & 4</span></li></ul></div>
                 <div><h4 class="font-bold text-blue-600 uppercase text-xs mb-2 tracking-wider">Modos Menores (con 2da Mayor)</h4><ul class="space-y-2"><li class="bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 flex justify-between"><span class="font-semibold text-slate-800 dark:text-slate-200">Dórico</span> <span class="font-mono text-blue-700 dark:text-blue-400 font-bold">6 & 2</span></li><li class="bg-slate-50 dark:bg-slate-900/50 px-3 py-2 rounded border border-slate-100 dark:border-slate-700 flex justify-between"><span class="font-semibold text-slate-800 dark:text-slate-200">Eólico</span> <span class="font-mono text-blue-700 dark:text-blue-400 font-bold">b6 & 2</span></li></ul></div>
@@ -445,8 +505,13 @@
 
     <div id="modal-ayuda-acordes" class="hidden modal-overlay fixed inset-0 z-[110] flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-8 relative max-h-[90vh] overflow-y-auto">
-            <button onclick="window.closeModal('modal-ayuda-acordes')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
-            <h3 class="text-2xl font-black mb-4 border-b pb-4"><i data-lucide="layers" class="text-blue-600 inline"></i> Acordes Base</h3>
+            <button onclick="window.closeModal('modal-ayuda-acordes')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 class="text-2xl font-black mb-4 border-b pb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                Acordes Base
+            </h3>
             <div class="text-sm space-y-2">
                 <p>Xmaj7 -> Jónico y Lidio</p><p>Xm7 -> Dórico</p><p>X7 -> Mixolidio</p><p>Xm(b6) -> Eólico</p><p>X7sus4 -> Frigio</p><p>Xm7(b5) -> Locrio</p>
             </div>
@@ -455,8 +520,13 @@
 
     <div id="help-funciones" class="hidden modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-xl w-full p-8 md:p-10 relative max-h-[90vh] overflow-y-auto">
-            <button onclick="window.closeModal('help-funciones')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
-            <h3 class="text-2xl font-black mb-6 border-b pb-4 text-slate-800 dark:text-white"><i data-lucide="network" class="text-fuchsia-600 inline"></i> Tácticas Armónicas</h3>
+            <button onclick="window.closeModal('help-funciones')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <h3 class="text-2xl font-black mb-6 border-b pb-4 text-slate-800 dark:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-fuchsia-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
+                Tácticas Armónicas
+            </h3>
             <div class="space-y-4 text-sm text-slate-700 dark:text-slate-300">
                 <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800"><strong class="text-blue-600 dark:text-blue-400 block mb-1">Fuerte (Ascendente)</strong>Salta 4ta Arriba o 3ra Abajo. Alta tracción armónica. Ideal para caer en Tiempos Fuertes de compás.</div>
                 <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-800"><strong class="text-amber-600 dark:text-amber-400 block mb-1">Débil (Descendente)</strong>Salta 5ta Arriba o 3ra Arriba. Pierde fuerza motriz. Ideal para suavizar progresiones en Tiempos Débiles.</div>
@@ -551,7 +621,9 @@
                 { n: 'Blanca', sub: 2, svg: `<g><path d="M12 14c-2.2 0-4 1.3-4 3s1.8 3 4 3 4-1.3 4-3-1.8-3-4-3z" fill="none" stroke="${c}" stroke-width="2" /><path d="M16 17V4" stroke="${c}" stroke-width="2" /></g>`, type:'simple' },
                 { n: 'Negra', sub: 4, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${c}" /><path d="M16 17V4" stroke="${c}" stroke-width="2" /></g>`, type:'simple' },
                 { n: 'Corchea', sub: 8, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${c}" /><path d="M16 17V4" stroke="${c}" stroke-width="2" />${this.renderFlags(1, c)}</g>`, type:'simple' },
-                { n: 'Semicorchea', sub: 16, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${c}" /><path d="M16 17V4" stroke="${c}" stroke-width="2" />${this.renderFlags(2, c)}</g>`, type:'simple' }
+                { n: 'Semicorchea', sub: 16, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${c}" /><path d="M16 17V4" stroke="${c}" stroke-width="2" />${this.renderFlags(2, c)}</g>`, type:'simple' },
+                { n: 'Fusa', sub: 32, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${c}" /><path d="M16 17V4" stroke="${c}" stroke-width="2" />${this.renderFlags(3, c)}</g>`, type:'simple' },
+                { n: 'Semifusa', sub: 64, svg: `<g><ellipse cx="12" cy="17" rx="4" ry="3" fill="${c}" /><path d="M16 17V4" stroke="${c}" stroke-width="2" />${this.renderFlags(4, c)}</g>`, type:'simple' }
             ]; },
             getAllFigures: function(c1, c2) {
                 const bw = this.getFigures(c1); const bd = this.getFigures(c2); let aw = [...bw]; let ad = [...bd];
@@ -658,7 +730,7 @@
             },
             setStepStatus: function(st, stt) {
                 const b = dGe(`badge-${st}`); const c = dGe(st===1?`paso-1-container`:`paso-${st}`); if(!b||!c)return;
-                if(stt==='correct'){b.className="bg-[#dcfce7] text-[#166534] w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800";b.innerHTML=`<i data-lucide="check" class="w-5 h-5"></i>`;if(window.lucide)lucide.createIcons();c.classList.add('correct-step');c.classList.remove('incorrect-step');}else if(stt==='error'){b.className="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800";b.innerHTML="✗";c.classList.add('incorrect-step');c.classList.remove('correct-step');}else{b.className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm dark:bg-blue-900/50 dark:text-blue-400";b.innerHTML=st;c.classList.remove('correct-step','incorrect-step');}
+                if(stt==='correct'){b.className="bg-[#dcfce7] text-[#166534] w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800";b.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;c.classList.add('correct-step');c.classList.remove('incorrect-step');}else if(stt==='error'){b.className="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm border border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800";b.innerHTML="✗";c.classList.add('incorrect-step');c.classList.remove('correct-step');}else{b.className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm dark:bg-blue-900/50 dark:text-blue-400";b.innerHTML=st;c.classList.remove('correct-step','incorrect-step');}
             },
             lockFromStep: function(st) {
                 for(let i=st;i<=5;i++){
@@ -846,7 +918,7 @@
                     const iN = isH ? (Math.pow(node.f, 2) * this.stiffnessB) : 0; const realHz = hz * (1 + iN);
                     const cardElement=document.createElement('div'); cardElement.className='bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col h-full relative hover:shadow-md transition-shadow';
                     const playBtn=`<button onclick="window.ArmonicosApp.playTone(${realHz})" class="absolute top-4 right-4 bg-slate-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 p-2.5 rounded-full z-10"><i data-lucide="play" class="w-4 h-4 fill-current"></i></button>`;
-                    if(!isH){cardElement.innerHTML=`${playBtn}<div class="text-xl font-black mb-1 w-3/4">${node.t}</div><div class="text-[10px] font-mono bg-slate-100 dark:bg-slate-900 inline-block px-2 py-1 rounded-md text-slate-500 mb-3">${node.i}</div><div class="abc-render-wrapper w-full mt-4"><div id="score-nat-${i}-lit" class="w-full"></div></div><div class="mt-auto text-xs font-bold p-3 bg-slate-50 dark:bg-slate-900 rounded-xl mt-4">Acústica: ${hz.toFixed(1)} Hz (${node.pt})</div>`;container.appendChild(cardElement);if(window.ABCJS)ABCJS.renderAbc(`score-nat-${i}-lit`,`${this.abcPrefix}[${node.a}]`,{responsive:"resize",staffwidth:250,foregroundColor:isD?"#f8fafc":"#1a202c"});if(window.lucide)lucide.createIcons();return;}
+                    if(!isH){cardElement.innerHTML=`${playBtn}<div class="text-xl font-black mb-1 w-3/4">${node.t}</div><div class="text-[10px] font-mono bg-slate-100 dark:bg-slate-900 inline-block px-2 py-1 rounded-md text-slate-50 mb-3">${node.i}</div><div class="abc-render-wrapper w-full mt-4"><div id="score-nat-${i}-lit" class="w-full"></div></div><div class="mt-auto text-xs font-bold p-3 bg-slate-50 dark:bg-slate-900 rounded-xl mt-4">Acústica: ${hz.toFixed(1)} Hz (${node.pt})</div>`;container.appendChild(cardElement);if(window.ABCJS)ABCJS.renderAbc(`score-nat-${i}-lit`,`${this.abcPrefix}[${node.a}]`,{responsive:"resize",staffwidth:250,foregroundColor:isD?"#f8fafc":"#1a202c"});if(window.lucide)lucide.createIcons();return;}
                     let mb=""; if(node.c&&node.c!=="+2")mb=`<div class="mt-2 text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-1.5 rounded-lg border border-orange-200 w-full text-center">⚠ Microtonal: ${node.c}</div>`;
                     cardElement.innerHTML=`${playBtn}<div class="text-xl font-black text-indigo-700 dark:text-indigo-400 mb-1">${node.t}</div><div class="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg inline-block mb-3 border border-indigo-100">Objetivo: ${data.s} ${node.nd.map(x=>x.f).join(' o ')}</div><div class="text-[11px] font-mono bg-slate-50 dark:bg-slate-900 px-3 py-2.5 rounded-xl mb-2 w-full"><div class="mb-1 text-slate-500 font-bold text-[9px] uppercase tracking-widest border-b border-slate-200 pb-1">${node.i}</div><div class="text-indigo-600 mt-2">▶ Frecuencia Teórica: <strong>${node.pt} (${hz.toFixed(1)}Hz)</strong></div><div class="text-rose-600 mt-0.5">▶ Real (Inarmonicidad): <strong class="${iN>0.002?'underline':''}">${realHz.toFixed(1)}Hz</strong></div></div><div class="text-[10px] p-2.5 bg-amber-50 rounded-xl text-slate-600"><strong>Bio:</strong> ${node.b}</div>${mb}<div class="grid grid-cols-1 gap-3 flex-grow mt-4"><div class="border border-rose-100 bg-rose-50/50 rounded-xl p-3 relative flex flex-col justify-between min-h-[140px]"><div class="text-[9px] uppercase tracking-widest text-rose-600 font-bold absolute top-3 left-3 z-10">Tono Resultante</div><div class="abc-render-wrapper w-full flex-grow mt-4"><div id="score-nat-${i}-th" class="w-full"></div></div></div><div class="border border-indigo-100 bg-indigo-50/40 rounded-xl p-3 relative flex flex-col justify-between min-h-[140px]"><div class="text-[9px] uppercase tracking-widest text-indigo-700 font-bold absolute top-3 left-3 z-10">Nodo Físico</div><div class="abc-render-wrapper w-full flex-grow mt-4"><div id="score-nat-${i}-pr" class="w-full diamond-mode"></div></div></div></div>`;
                     container.appendChild(cardElement);
@@ -1255,29 +1327,64 @@
                 }
                 return pen;
             },
-            downloadMidi: function() {
-                if(!window.MidiWriter || this.activeSeq.filter(x=>x).length === 0) { alert("No hay secuencia o MidiWriterJS no está cargado."); return; }
-                let trackS = new MidiWriter.Track(); trackS.addTrackName('Soprano/Alto');
-                let trackB = new MidiWriter.Track(); trackB.addTrackName('Tenor/Bass');
-                
-                const cp = parseInt(dGe('func-cpm')?.value||1);
-                let durMap = {1: '1', 2: '2', 4: '4'};
-                let tickDur = durMap[cp] || '1';
-                let waitStr = [];
+            parseAbcToXml: function(abcNote) {
+                let alter = 0; let step = 'C'; let octave = 4;
+                let cleanAbc = abcNote.replace(/[^a-gA-G,\'^_]/g, ''); 
+                let match = cleanAbc.match(/^([\^_]*)([a-gA-G])([,']*)$/);
+                if(!match) return {step:'C', alter:0, octave:4};
+                let acc = match[1]; let lettr = match[2]; let octMod = match[3];
 
-                this.activeSeq.forEach(a => {
-                    if(a && a.midiVoices && a.midiVoices.length >= 4) {
-                        let evtS = new MidiWriter.NoteEvent({pitch: [a.midiVoices[2], a.midiVoices[3]], duration: tickDur});
-                        let evtB = new MidiWriter.NoteEvent({pitch: [a.midiVoices[0], a.midiVoices[1]], duration: tickDur});
-                        if(waitStr.length > 0) { evtS.wait = waitStr; evtB.wait = waitStr; waitStr = []; }
-                        trackS.addEvent(evtS); trackB.addEvent(evtB);
-                    } else {
-                        waitStr.push(tickDur);
-                    }
-                });
+                if(acc==='^') alter=1; else if(acc==='^^') alter=2; else if(acc==='_') alter=-1; else if(acc==='__') alter=-2;
+                step = lettr.toUpperCase();
+                if(lettr === lettr.toLowerCase()) octave = 5; else octave = 4;
+
+                for(let c of octMod) { if(c===',') octave--; if(c==="'") octave++; }
+                return {step, alter, octave};
+            },
+            downloadXML: function() {
+                if(this.activeSeq.filter(x=>x).length === 0) { alert("No hay secuencia para exportar."); return; }
+                const cpm = parseInt(dGe('func-cpm')?.value||1);
+                let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">\n<score-partwise version="3.1">\n<part-list>\n<score-part id="P1"><part-name>Soprano/Alto</part-name></score-part>\n<score-part id="P2"><part-name>Tenor/Bajo</part-name></score-part>\n</part-list>\n`;
                 
-                let write = new MidiWriter.Writer([trackS, trackB]);
-                const a = document.createElement('a'); a.setAttribute('download', 'Coral_SATB.mid'); a.setAttribute('href', write.dataUri()); a.click();
+                const getNoteXML = (abc, isChord) => {
+                    let parsed = this.parseAbcToXml(abc);
+                    let alterTag = parsed.alter !== 0 ? `<alter>${parsed.alter}</alter>\n` : '';
+                    return `<note>\n${isChord?'<chord/>\n':''}<pitch>\n<step>${parsed.step}</step>\n${alterTag}<octave>${parsed.octave}</octave>\n</pitch>\n<duration>1</duration>\n<type>quarter</type>\n</note>\n`;
+                };
+
+                let p1 = `<part id="P1">\n`; let p2 = `<part id="P2">\n`;
+                let measureCount = 1;
+                
+                for(let i=0; i<this.activeSeq.length; i+=cpm) {
+                    p1 += `<measure number="${measureCount}">\n`;
+                    p2 += `<measure number="${measureCount}">\n`;
+                    if(measureCount === 1) {
+                        p1 += `<attributes><divisions>1</divisions><key><fifths>0</fifths></key><time><beats>${cpm}</beats><beat-type>4</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>\n`;
+                        p2 += `<attributes><divisions>1</divisions><key><fifths>0</fifths></key><time><beats>${cpm}</beats><beat-type>4</beat-type></time><clef><sign>F</sign><line>4</line></clef></attributes>\n`;
+                    }
+                    
+                    for(let j=0; j<cpm; j++) {
+                        let a = this.activeSeq[i+j];
+                        if(a) {
+                            p1 += getNoteXML(a.notasABC[3].replace(/\s/g,''), false); // Soprano
+                            p1 += getNoteXML(a.notasABC[2].replace(/\s/g,''), true);  // Alto
+                            p2 += getNoteXML(a.notasABC[1].replace(/\s/g,''), false); // Tenor
+                            p2 += getNoteXML(a.notasABC[0].replace(/\s/g,''), true);  // Bass
+                        } else {
+                            p1 += `<note><rest/><duration>1</duration><type>quarter</type></note>\n`;
+                            p2 += `<note><rest/><duration>1</duration><type>quarter</type></note>\n`;
+                        }
+                    }
+                    p1 += `</measure>\n`;
+                    p2 += `</measure>\n`;
+                    measureCount++;
+                }
+                p1 += `</part>\n`; p2 += `</part>\n`;
+                xml += p1 + p2 + `</score-partwise>`;
+                
+                const blob = new Blob([xml], {type: 'application/vnd.recordare.musicxml+xml'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.setAttribute('download', 'Coral_SATB.xml'); a.setAttribute('href', url); a.click();
             },
             downloadScore: function() {
                 const svg=document.querySelector('#func-abc-score svg');if(!svg){alert("No hay partitura para descargar.");return;}
@@ -1354,7 +1461,19 @@
             },
             renderABCSequence: function() {
                 if(!window.ABCJS)return;const mt=dGe('func-meter')?.value||'4/4';const cp=parseInt(dGe('func-cpm')?.value||1);const isD=document.documentElement.classList.contains('dark');
-                let aS=`X:1\nM:${mt}\nL:1/1\nK:C\n%%staves {1 2}\nV:1 clef=treble name="S/A"\nV:2 clef=bass name="T/B"\n[V:1] `;let ts="";let bs="";
+                
+                const isMobile = window.innerWidth < 768;
+                const compasesPorLinea = isMobile ? 2 : 4; 
+                
+                const scoreContainer = dGe('func-abc-score');
+                let parentWidth = scoreContainer && scoreContainer.parentElement ? scoreContainer.parentElement.clientWidth : (isMobile ? 320 : 800);
+                
+                // MÁS GRANDE: Reducimos el forcedWidth matemático e incrementamos el scale de renderizado
+                let renderScale = isMobile ? 2.0 : 1.5;
+                let forcedWidth = Math.max(200, (parentWidth - 20) / renderScale);
+
+                // Se inyecta stretchlast y staffwidth directamente en la gramática para violar la justificación natural
+                let aS=`X:1\nM:${mt}\nL:1/1\nK:C\n%%leftmargin 5\n%%rightmargin 5\n%%staffsep 60\n%%stretchlast 1\n%%staffwidth ${forcedWidth}\n%%staves {1 2}\nV:1 clef=treble\nV:2 clef=bass\n[V:1] `;let ts="";let bs="";
                 const sW=dGe('func-weber')?.checked||false;const sA=dGe('func-american')?.checked||false;
                 this.activeSeq.forEach((a,i)=>{
                     if(a){
@@ -1368,9 +1487,25 @@
                         
                         ts+=`${cA}[${sN}${aN}] `;bs+=`${cW}[${tN}${bN}] `;
                     }else{ts+=`z `;bs+=`z `;}
-                    if((i+1)%cp===0){ts+="| ";bs+="| ";}if((i+1)%(cp*4)===0&&i!==this.activeSeq.length-1){ts+="\n";bs+="\n";}
+                    if((i+1)%cp===0){ts+="| ";bs+="| ";}
+                    
+                    let currentCompas = Math.floor((i + 1) / cp);
+                    if((i+1)%cp === 0 && currentCompas % compasesPorLinea === 0 && i !== this.activeSeq.length-1){
+                        ts+="\n";bs+="\n";
+                    }
                 });
-                aS+=ts+"\n[V:2] "+bs; ABCJS.renderAbc('func-abc-score',aS,{add_classes:true,responsive:"resize",staffwidth:750,foregroundColor:isD?"#f8fafc":"#1a202c"});
+                aS+=ts+"\n[V:2] "+bs; 
+                
+                if(scoreContainer) {
+                    scoreContainer.style.minWidth = '100%'; 
+                }
+                
+                ABCJS.renderAbc('func-abc-score',aS,{
+                    add_classes:true,
+                    responsive: "resize",
+                    scale: renderScale,
+                    foregroundColor:isD?"#f8fafc":"#1a202c"
+                });
             }
         };
 
@@ -1379,6 +1514,7 @@
             window.EscalasApp.renderDiccionario();
             window.showTab('metrica'); 
             window.FuncionesApp.init(); 
+            if(window.lucide) lucide.createIcons();
         });
     </script>
 </body>
